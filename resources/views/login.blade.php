@@ -11,20 +11,29 @@
             <p class="text-black text-lg">Sistem Informasi Akuntansi</p>
         </div>
 
-        <!-- Form Login -->
-        <form class="space-y-4">            
-            <!-- Username Input -->
+        @if ($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
+        <form class="space-y-4" method="POST" action="{{ route('login.post') }}">   
+            @csrf         
             <div>
-                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <label for="username" class="block text-sm font-medium text-gray-700">Email</label>
                 <input 
                     type="text" 
                     id="username" 
                     name="username" 
+                    value="{{ old('username') }}"
                     class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Masukkan username">
+                    placeholder="Masukkan email">
             </div>
 
-            <!-- Password Input -->
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                 <input 
@@ -35,22 +44,18 @@
                     placeholder="Masukkan password">
             </div>
 
-            <!-- Remember Me -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <input 
-                        type="checkbox" 
-                        id="remember" 
-                        name="remember"
-                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="remember" class="ml-2 block text-sm text-gray-700">
-                        Ingat saya
-                    </label>
-                </div>
-                <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Lupa password?</a>
+            <div class="flex items-center">
+                <input 
+                    type="checkbox" 
+                    id="remember" 
+                    name="remember"
+                    {{ old('remember') ? 'checked' : '' }}
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                <label for="remember" class="ml-2 block text-sm text-gray-700">
+                    Ingat saya
+                </label>
             </div>
 
-            <!-- Login Button -->
             <button 
                 type="submit"
                 class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out transform hover:-translate-y-0.5">

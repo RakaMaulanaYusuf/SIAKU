@@ -1,6 +1,6 @@
 @extends('main')
 
-@section('title', 'Buku Besar')
+@section('title', 'Buku Besar Pembantu')
 
 @section('page')
 <div class="bg-gray-50 min-h-screen flex flex-col" x-data="{ 
@@ -15,7 +15,7 @@
             return;
         }
         
-        fetch(`/bukubesar/transactions?account_id=${this.selectedAccount}`)
+        fetch(`/bukubesarpembantu/transactions?helper_id=${this.selectedAccount}`)
             .then(response => response.json())
             .then(data => {
                 this.transactions = data;
@@ -34,11 +34,11 @@
             <div class="bg-white p-6 mx-6 mt-6 rounded-xl shadow-sm">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h1 class="text-2xl font-bold text-black">Buku Besar</h1>
+                        <h1 class="text-2xl font-bold text-black">Buku Besar Pembantu</h1>
                         <div class="flex items-center gap-4 mt-2">
                             <select x-model="selectedAccount" 
                                 class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                                <option value="">Pilih Kode Akun</option>
+                                <option value="">Pilih Kode Bantu</option>
                                 <template x-for="account in accounts" :key="account.code">
                                     <option :value="account.code" x-text="`${account.code} - ${account.name}`"></option>
                                 </template>
@@ -95,7 +95,7 @@
                         <tbody x-show="transactions.length === 0">
                             <tr>
                                 <td colspan="7" class="py-4 px-4 text-center text-gray-500">
-                                    Tidak ada data transaksi untuk akun yang dipilih
+                                    Tidak ada data transaksi untuk kode bantu yang dipilih
                                 </td>
                             </tr>
                         </tbody>
@@ -119,7 +119,7 @@
                 <!-- Print Button -->
                 <div class="flex justify-between mt-6">
                     <button 
-                        @click="window.location.href = `/bukubesar/pdf?account_id=${selectedAccount}`"
+                        @click="window.location.href = `/bukubesarpembantu/pdf?helper_id=${selectedAccount}`"
                         :disabled="!selectedAccount"
                         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

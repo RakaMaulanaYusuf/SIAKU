@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 2. Tabel Kode Bantu
-        Schema::create('auxiliary_codes', function (Blueprint $table) {
+        Schema::create('companies', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 10)->unique();
             $table->string('name');
-            $table->string('auxiliary_table')->nullable();
-            $table->string('status')->nullable();
-            $table->decimal('initial_balance', 15, 2)->default(0);
+            $table->string('type');
+            $table->enum('status', ['Aktif', 'Nonaktif'])->default('Aktif');
+            $table->string('period_month');
+            $table->year('period_year');
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('auxiliary_codes');
+        Schema::dropIfExists('companies');
     }
 };
