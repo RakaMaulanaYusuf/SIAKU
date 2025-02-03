@@ -83,6 +83,33 @@ class BukuBesarController extends Controller
         });
     }
 
+    public function getAccountBalance($company_id, $account_id) {
+        $account = KodeAkun::where('company_id', $company_id)
+            ->where('account_id', $account_id)
+            ->first();
+    
+        if (!$account) {
+            return 0; // Jika akun tidak ditemukan, saldo dianggap nol
+        }
+    
+        // Ambil saldo awal berdasarkan saldo debit & kredit dari tabel kode_akun
+        $running_balance = ($account->debit ?? 0) - ($account->credit ?? 0);
+    
+        // Ambil transaksi sesuai urutan (dari yang paling awal ke terbaru)
+        $transactions = JurnalUmum::where('company_id', $company_id)
+            ->where('account_id', $account_id)
+            ->orderBy('date')
+            ->orderBy('id')
+            ->get();
+    
+        // Iterasi transaksi untuk mendapatkan saldo akhir
+        foreach ($transactions as $transaction) {
+            $running_balance += ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+        }
+    
+        return $running_balance;
+    }
+    
     public function downloadPDF(Request $request)
     {
         try {

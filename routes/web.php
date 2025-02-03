@@ -8,6 +8,9 @@ use App\Http\Controllers\KodeBantuController;
 use App\Http\Controllers\JurnalUmumController;
 use App\Http\Controllers\BukuBesarController;
 use App\Http\Controllers\BukuBesarPembantuController;
+use App\Http\Controllers\LabaRugiController;
+use App\Http\Controllers\NeracaController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\CheckActiveCompany;
 
 // Public routes
@@ -31,9 +34,7 @@ Route::middleware('auth')->group(function () {
     // Routes yang membutuhkan company aktif
     Route::middleware(CheckActiveCompany::class)->group(function () {
         // Dashboard
-        Route::get('/dashboard', function () {
-            return view('dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         
         // Kode Akun
         Route::get('/kodeakun', [KodeAkunController::class, 'index'])->name('kodeakun');
@@ -66,34 +67,22 @@ Route::middleware('auth')->group(function () {
         Route::get('/bukubesarpembantu/pdf', [BukuBesarPembantuController::class, 'downloadPDF'])->name('bukubesarpembantu.pdf');
         
         // Laba Rugi Routes
-        Route::get('/pendapatan', function () {
-            return view('pendapatan');
-        })->name('pendapatan');
-        
-        Route::get('/hpp', function () {
-            return view('hpp');
-        })->name('hpp');
-        
-        Route::get('/biayaoperasional', function () {
-            return view('biayaoperasional');
-        })->name('biayaoperasional');
+        Route::get('/labarugi', [LabaRugiController::class, 'index'])->name('labarugi.index');
+        Route::post('/labarugi', [LabaRugiController::class, 'store'])->name('labarugi.store');
+        Route::put('/labarugi/{type}/{id}', [LabaRugiController::class, 'update'])->name('labarugi.update');
+        Route::delete('/labarugi/{type}/{id}', [LabaRugiController::class, 'destroy'])->name('labarugi.destroy');
+        Route::get('/labarugi/pdf', [LabaRugiController::class, 'generatePDF'])->name('labarugi.pdf');
+        Route::get('/labarugi/account/{account_id}', [LabaRugiController::class, 'getDataByAccount'])->name('labarugi.getDataByAccount');
+        Route::post('/labarugi/refresh-balances', [LabaRugiController::class, 'refreshBalances'])->name('labarugi.refreshBalances');
         
         // Neraca Routes
-        Route::get('/aktivalancar', function () {
-            return view('aktivalancar');
-        })->name('aktivalancar');
+        Route::get('/neraca', [NeracaController::class, 'index'])->name('neraca');
+        Route::get('/neraca', [NeracaController::class, 'index'])->name('neraca');
+        Route::post('/neraca', [NeracaController::class, 'store']);
+        Route::put('/neraca/{type}/{id}', [NeracaController::class, 'update']);
+        Route::delete('/neraca/{type}/{id}', [NeracaController::class, 'destroy']);
+        Route::get('/neraca/pdf', [NeracaController::class, 'generatePDF']);
         
-        Route::get('/aktivatetap', function () {
-            return view('aktivatetap');
-        })->name('aktivatetap');
-        
-        Route::get('/kewajiban', function () {
-            return view('kewajiban');
-        })->name('kewajiban');
-        
-        Route::get('/ekuitas', function () {
-            return view('ekuitas');
-        })->name('ekuitas');
         
         // Lainnya
         Route::get('/lainnya', function () {

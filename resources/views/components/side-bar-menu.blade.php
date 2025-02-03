@@ -78,85 +78,24 @@
             </a>
  
             <!-- Dropdown Laba Rugi -->
-            <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" 
-                        class="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 ease-in-out rounded-xl">
-                    <div class="p-2 bg-blue-600 rounded-lg mr-3">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <span class="font-medium text-sm">Laba Rugi</span>
-                    <svg class="w-5 h-5 ml-auto transform transition-transform duration-300" 
-                         :class="{'rotate-180': open}" 
-                         fill="none" 
-                         stroke="currentColor" 
-                         viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            <a href="/labarugi" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 ease-in-out rounded-xl">
+                <div class="p-2 bg-blue-600 rounded-lg mr-3">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                </button>
-                <div x-show="open" 
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 transform -translate-y-2"
-                     x-transition:enter-end="opacity-100 transform translate-y-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 transform translate-y-0"
-                     x-transition:leave-end="opacity-0 transform -translate-y-2"
-                     @click.away="open = false" 
-                     class="pl-14 pr-4 py-2 space-y-1">
-                    <a href="/pendapatan" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-300 ease-in-out">
-                        Pendapatan
-                    </a>
-                    <a href="/hpp" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-300 ease-in-out">
-                        HPP
-                    </a>
-                    <a href="/biayaoperasional" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-300 ease-in-out">
-                        Biaya Operasional
-                    </a>
                 </div>
-            </div>
+                <span class="font-medium text-sm">Laba Rugi</span>
+            </a>
 
             <!-- Dropdown Neraca -->
-            <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" 
-                        class="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 ease-in-out rounded-xl">
-                    <div class="p-2 bg-blue-600 rounded-lg mr-3">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <span class="font-medium text-sm">Neraca</span>
-                    <svg class="w-5 h-5 ml-auto transform transition-transform duration-300" 
-                         :class="{'rotate-180': open}" 
-                         fill="none" 
-                         stroke="currentColor" 
-                         viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            <a href="/neraca" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 ease-in-out rounded-xl">
+                <div class="p-2 bg-blue-600 rounded-lg mr-3">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                </button>
-                <div x-show="open" 
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 transform -translate-y-2"
-                     x-transition:enter-end="opacity-100 transform translate-y-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 transform translate-y-0"
-                     x-transition:leave-end="opacity-0 transform -translate-y-2"
-                     @click.away="open = false" 
-                     class="pl-14 pr-4 py-2 space-y-1">
-                    <a href="/aktivalancar" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-300 ease-in-out">
-                        Aktiva Lancar
-                    </a>
-                    <a href="/aktivatetap" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-300 ease-in-out">
-                        Aktiva Tetap
-                    </a>
-                    <a href="/kewajiban" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-300 ease-in-out">
-                        Kewajiban
-                    </a>
-                    <a href="/ekuitas" class="block px-3 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-300 ease-in-out">
-                        Ekuitas
-                    </a>
                 </div>
-            </div>
+                <span class="font-medium text-sm">Neraca</span>
+            </a>
         </nav>
     
         <!-- User Profile -->

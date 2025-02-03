@@ -9,15 +9,8 @@
         
         <div id="main-content" class="relative text-black ml-72 font-poppins w-full h-full overflow-y-auto">
             <!-- Current Company Indicator -->
-            <div class="sticky top-0 bg-blue-600 text-white py-2 px-6 flex justify-between items-center z-50">
-                <div class="flex items-center">
-                    <span class="font-medium">Perusahaan Aktif:</span>
-                    <span class="ml-2">PT Abadi Jaya</span>
-                </div>
-                <button class="text-sm bg-blue-700 px-3 py-1 rounded hover:bg-blue-800 transition-colors">
-                    Ganti Perusahaan
-                </button>
-            </div>
+            <x-nav-bar></x-nav-bar>
+
             <!-- Header Box -->
             <div class="bg-white p-6 mx-6 mt-6 rounded-xl shadow-sm">
                 <div class="flex justify-between items-center">
@@ -28,7 +21,7 @@
                     <div class="flex gap-4">
                         <div class="text-right">
                             <p class="text-sm text-gray-600">Periode</p>
-                            <p class="font-semibold">Januari 2025</p>
+                            <p class="font-semibold">{{ $currentMonth->format('F Y') }}</p>
                         </div>
                     </div>
                 </div>
@@ -41,8 +34,10 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm">Total Pendapatan</p>
-                            <h3 class="text-2xl font-bold mt-1">Rp 125.000.000</h3>
-                            <p class="text-green-500 text-sm mt-1">+12.5% dari bulan lalu</p>
+                            <h3 class="text-2xl font-bold mt-1">Rp {{ number_format($totalPendapatanCurrent, 0, ',', '.') }}</h3>
+                            <p class="{{ $pendapatanPercentage >= 0 ? 'text-green-500' : 'text-red-500' }} text-sm mt-1">
+                                {{ $pendapatanPercentage >= 0 ? '+' : '' }}{{ number_format($pendapatanPercentage, 1) }}% dari bulan lalu
+                            </p>
                         </div>
                         <div class="p-3 bg-green-100 rounded-lg">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,8 +52,10 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm">Total Pengeluaran</p>
-                            <h3 class="text-2xl font-bold mt-1">Rp 75.000.000</h3>
-                            <p class="text-red-500 text-sm mt-1">+5.2% dari bulan lalu</p>
+                            <h3 class="text-2xl font-bold mt-1">Rp {{ number_format($totalPengeluaranCurrent, 0, ',', '.') }}</h3>
+                            <p class="{{ $pengeluaranPercentage >= 0 ? 'text-red-500' : 'text-green-500' }} text-sm mt-1">
+                                {{ $pengeluaranPercentage >= 0 ? '+' : '' }}{{ number_format($pengeluaranPercentage, 1) }}% dari bulan lalu
+                            </p>
                         </div>
                         <div class="p-3 bg-red-100 rounded-lg">
                             <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,8 +70,10 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm">Laba Bersih</p>
-                            <h3 class="text-2xl font-bold mt-1">Rp 50.000.000</h3>
-                            <p class="text-green-500 text-sm mt-1">+8.3% dari bulan lalu</p>
+                            <h3 class="text-2xl font-bold mt-1">Rp {{ number_format($labaBersihCurrent, 0, ',', '.') }}</h3>
+                            <p class="{{ $labaBersihPercentage >= 0 ? 'text-green-500' : 'text-red-500' }} text-sm mt-1">
+                                {{ $labaBersihPercentage >= 0 ? '+' : '' }}{{ number_format($labaBersihPercentage, 1) }}% dari bulan lalu
+                            </p>
                         </div>
                         <div class="p-3 bg-blue-100 rounded-lg">
                             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,8 +88,8 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm">Total Aset</p>
-                            <h3 class="text-2xl font-bold mt-1">Rp 850.000.000</h3>
-                            <p class="text-green-500 text-sm mt-1">+3.2% dari bulan lalu</p>
+                            <h3 class="text-2xl font-bold mt-1">Rp {{ number_format($totalAset, 0, ',', '.') }}</h3>
+                            <p class="text-green-500 text-sm mt-1">+{{ number_format($asetPercentage, 1) }}% dari bulan lalu</p>
                         </div>
                         <div class="p-3 bg-purple-100 rounded-lg">
                             <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +99,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Recent Transactions & Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
                 <!-- Recent Transactions -->
