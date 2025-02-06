@@ -15,7 +15,7 @@
             return;
         }
         
-        fetch(`/bukubesar/transactions?account_id=${this.selectedAccount}`)
+        fetch(`/vbukubesar/transactions?account_id=${this.selectedAccount}`)
             .then(response => response.json())
             .then(data => {
                 this.transactions = data;
@@ -27,15 +27,13 @@
     }
 }" @change="loadTransactions">
     <div class="flex overflow-hidden">
-        <x-side-bar-menu></x-side-bar-menu>
+        <x-side-bar-customer></x-side-bar-customer>
         <div id="main-content" class="relative text-black ml-72 font-poppins w-full h-full overflow-y-auto">
-            <x-nav-bar></x-nav-bar>
-            
             <div class="bg-white p-6 mx-6 mt-6 rounded-xl shadow-sm">
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h1 class="text-2xl font-bold text-black">Buku Besar</h1>
-                        <p class="text-sm text-gray-600 mt-1">Kelola buku besar perusahaan</p>
+                        <p class="text-sm text-gray-600 mt-1">Lihat buku besar perusahaan</p>
                         <div class="flex items-center gap-4 mt-2">
                             <select x-model="selectedAccount" 
                                 class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
@@ -118,11 +116,11 @@
                 </div>
                 
                 <!-- Print Button -->
-                <div class="flex justify-between mt-6">
+                <div class="flex justify-end mt-6">
                     <button 
-                        @click="window.location.href = `/bukubesar/pdf?account_id=${selectedAccount}`"
+                        @click="window.location.href = `/vbukubesar/pdf?account_id=${selectedAccount}`"
                         :disabled="!selectedAccount"
-                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                         </svg>

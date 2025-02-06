@@ -8,6 +8,7 @@
     transactions: {{ Js::from($journals) }},
     accounts: {{ Js::from($accounts) }},
     helpers: {{ Js::from($helpers) }},
+    balanceStatus: {{ Js::from($balanceStatus) }},
     newRow: {
         date: '',
         transaction_proof: '',
@@ -38,6 +39,7 @@
                     this.resetForm();
                 }
                 alert('Data berhasil disimpan');
+                location.reload(); // Reload untuk memperbarui status balance
             } else {
                 alert(result.message || 'Terjadi kesalahan saat menyimpan data');
             }
@@ -87,6 +89,7 @@
             if (result.success) {
                 this.transactions = this.transactions.filter(t => t.id !== id);
                 alert('Data berhasil dihapus');
+                location.reload(); // Reload untuk memperbarui status balance
             }
         } catch (error) {
             console.error('Error:', error);
@@ -118,6 +121,7 @@
                 transaction.isEditing = false;
                 delete transaction.originalData;
                 Object.assign(transaction, result.journal);
+                location.reload(); // Reload untuk memperbarui status balance
             } else {
                 alert(result.message || 'Terjadi kesalahan saat menyimpan perubahan');
             }
@@ -177,6 +181,30 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Balance Status Alert -->
+                <div x-show="balanceStatus" class="mb-6">
+                    <div :class="balanceStatus.is_balanced ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700'" 
+                         class="border-l-4 p-4 mb-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg x-show="balanceStatus.is_balanced" class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <svg x-show="!balanceStatus.is_balanced" class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm leading-5 font-medium" x-text="balanceStatus.message"></p>
+                                <p class="text-sm leading-5 mt-1">
+                                    Total Debit: <span class="font-semibold" x-text="new Intl.NumberFormat('id-ID').format(balanceStatus.total_debit)"></span> | 
+                                    Total Kredit: <span class="font-semibold" x-text="new Intl.NumberFormat('id-ID').format(balanceStatus.total_credit)"></span>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -430,7 +458,7 @@
                             <tr>
                                 <td colspan="7" class="py-2 px-4 text-right font-medium border-r">Total:</td>
                                 <td class="py-2 px-4 text-right font-medium border-r" 
-                                    x-text="new Intl.NumberFormat('id-ID').format(
+                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(
                                         transactions.reduce((sum, t) => sum + (parseFloat(t.debit) || 0), 0)
                                     )">
                                 </td>
@@ -444,7 +472,6 @@
                         </tfoot>
                     </table>
                 </div>
-
                 <!-- Navigation Buttons -->
                 <div class="flex justify-between mt-6">
                     <button class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">

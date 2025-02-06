@@ -10,6 +10,23 @@ use Illuminate\Support\Facades\DB;
 
 class JurnalUmumController extends Controller
 {
+    private function checkBalance($journals)
+    {
+        $totalDebit = $journals->sum('debit') ?? 0;
+        $totalCredit = $journals->sum('credit') ?? 0;
+        
+        $status = [
+            'is_balanced' => abs($totalDebit - $totalCredit) < 0.01, // Using small epsilon for floating point comparison
+            'total_debit' => $totalDebit,
+            'total_credit' => $totalCredit,
+            'message' => abs($totalDebit - $totalCredit) < 0.01 ? 
+                'Total Debit dan Kredit sudah balance' : 
+                'Total Debit dan Kredit belum balance'
+        ];
+        
+        return $status;
+    }
+
     public function index()
     {
         $company_id = auth()->user()->active_company_id;
@@ -34,6 +51,9 @@ class JurnalUmumController extends Controller
                 ];
             });
 
+        // Check balance
+        $balanceStatus = $this->checkBalance(collect($journals));
+
         $accounts = KodeAkun::where('company_id', $company_id)
             ->orderBy('account_id')
             ->get()
@@ -54,7 +74,7 @@ class JurnalUmumController extends Controller
                 ];
             });
             
-        return view('jurnalumum', compact('journals', 'accounts', 'helpers'));
+        return view('jurnalumum', compact('journals', 'accounts', 'helpers', 'balanceStatus'));
     }
 
     public function store(Request $request)
@@ -131,7 +151,10 @@ class JurnalUmumController extends Controller
     {
         try {
             if ($jurnalUmum->company_id !== auth()->user()->active_company_id) {
-                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
             }
 
             $validated = $request->validate([

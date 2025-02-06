@@ -2,16 +2,134 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class JurnalUmumSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        //
+        DB::table('jurnal_umum')->insert([
+            [
+                'company_id' => 1,
+                'date' => '2025-02-01',
+                'transaction_proof' => 'TRX001',
+                'description' => 'Pembelian Barang',
+                'account_id' => '1104',
+                'helper_id' => null,
+                'debit' => 10000000.00,
+                'credit' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'company_id' => 1,
+                'date' => '2025-02-01',
+                'transaction_proof' => 'TRX001',
+                'description' => 'Pembelian Barang',
+                'account_id' => '2101',
+                'helper_id' => null,
+                'debit' => null,
+                'credit' => 10000000.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'company_id' => 1,
+                'date' => '2025-02-02',
+                'transaction_proof' => 'TRX002',
+                'description' => 'Pembayaran Gaji Karyawan',
+                'account_id' => '5101',
+                'helper_id' => null,
+                'debit' => 15000000.00,
+                'credit' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'company_id' => 1,
+                'date' => '2025-02-02',
+                'transaction_proof' => 'TRX002',
+                'description' => 'Pembayaran Gaji Karyawan',
+                'account_id' => '1101',
+                'helper_id' => null,
+                'debit' => null,
+                'credit' => 15000000.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'company_id' => 1,
+                'date' => '2025-02-03',
+                'transaction_proof' => 'TRX003',
+                'description' => 'Pendapatan Jasa',
+                'account_id' => '1101',
+                'helper_id' => null,
+                'debit' => 20000000.00,
+                'credit' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'company_id' => 1,
+                'date' => '2025-02-03',
+                'transaction_proof' => 'TRX003',
+                'description' => 'Pendapatan Jasa',
+                'account_id' => '4101',
+                'helper_id' => null,
+                'debit' => null,
+                'credit' => 20000000.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'company_id' => 1,
+                'date' => '2025-02-04',
+                'transaction_proof' => 'TRX004',
+                'description' => 'Pembayaran Sewa Kantor',
+                'account_id' => '5102',
+                'helper_id' => null,
+                'debit' => 8000000.00,
+                'credit' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'company_id' => 1,
+                'date' => '2025-02-04',
+                'transaction_proof' => 'TRX004',
+                'description' => 'Pembayaran Sewa Kantor',
+                'account_id' => '1101',
+                'helper_id' => null,
+                'debit' => null,
+                'credit' => 8000000.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'company_id' => 1,
+                'date' => '2025-02-05',
+                'transaction_proof' => 'TRX005',
+                'description' => 'Pembayaran Hutang',
+                'account_id' => '2101',
+                'helper_id' => null,
+                'debit' => 5000000.00,
+                'credit' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'company_id' => 1,
+                'date' => '2025-02-05',
+                'transaction_proof' => 'TRX005',
+                'description' => 'Pembayaran Hutang',
+                'account_id' => '1101',
+                'helper_id' => null,
+                'debit' => null,
+                'credit' => 5000000.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        ]);
     }
 }

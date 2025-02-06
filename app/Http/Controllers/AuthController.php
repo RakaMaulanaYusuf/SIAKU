@@ -4,13 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
     public function showLogin()
     {
-        return view('login');
+        return view('/login');
     }
 
     public function login(Request $request)
@@ -22,17 +21,22 @@ class AuthController extends Controller
 
         if (Auth::attempt(['email' => $credentials['username'], 'password' => $credentials['password']])) {
             $user = Auth::user();
-            Session::put('active_role', $user->role);
+            $request->session()->regenerate();
             
-            return redirect()->route('listP');
+            if ($user->role === 'viewer') {
+                $user->update(['active_company_id' => $user->assigned_company_id]);
+                return redirect()->route('vdashboard');
+            } else {
+                return redirect()->route('listP');
+            }
+            
         }
 
-        return redirect('login')->with('error', 'Username atau password salah');
+        return back()->withErrors(['username' => 'Invalid credentials']);
     }
 
     public function logout(Request $request)
     {
-        Session::forget('active_role');
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

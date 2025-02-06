@@ -83,28 +83,45 @@ class BukuBesarController extends Controller
         });
     }
 
-    public function getAccountBalance($company_id, $account_id) {
+    public function getAccountBalance($company_id, $account_id) 
+    {
         $account = KodeAkun::where('company_id', $company_id)
             ->where('account_id', $account_id)
             ->first();
     
         if (!$account) {
-            return 0; // Jika akun tidak ditemukan, saldo dianggap nol
+            return 0;
+        }
+        
+        $pos_saldo = $account->balance_type;
+        
+        // Inisialisasi saldo awal berdasarkan pos saldo
+        if ($pos_saldo === 'DEBIT') {
+            // Untuk akun DEBIT, saldo awal adalah Debit - Credit
+            $running_balance = ($account->debit ?? 0) - ($account->credit ?? 0);
+        } else {
+            // Untuk akun CREDIT, saldo awal adalah Credit - Debit
+            $running_balance = ($account->credit ?? 0) - ($account->debit ?? 0);
         }
     
-        // Ambil saldo awal berdasarkan saldo debit & kredit dari tabel kode_akun
-        $running_balance = ($account->debit ?? 0) - ($account->credit ?? 0);
-    
-        // Ambil transaksi sesuai urutan (dari yang paling awal ke terbaru)
+        // Ambil transaksi sesuai urutan
         $transactions = JurnalUmum::where('company_id', $company_id)
             ->where('account_id', $account_id)
             ->orderBy('date')
             ->orderBy('id')
             ->get();
     
-        // Iterasi transaksi untuk mendapatkan saldo akhir
+        // Untuk setiap transaksi
         foreach ($transactions as $transaction) {
-            $running_balance += ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+            // Jika pos saldo DEBIT
+            if ($pos_saldo === 'DEBIT') {
+                // Debit menambah, Credit mengurangi
+                $running_balance = $running_balance + ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+            } else {
+                // Jika pos saldo CREDIT
+                // Credit menambah, Debit mengurangi
+                $running_balance = $running_balance + ($transaction->credit ?? 0) - ($transaction->debit ?? 0);
+            }
         }
     
         return $running_balance;

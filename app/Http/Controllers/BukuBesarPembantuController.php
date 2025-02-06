@@ -12,27 +12,27 @@ class BukuBesarPembantuController extends Controller
 {
     public function index()
     {
-            $company_id = auth()->user()->active_company_id;
+        $company_id = auth()->user()->active_company_id;
             
-            // Ambil daftar kode bantu yang memiliki transaksi di jurnal umum
-            $accounts = KodeBantu::whereHas('journalEntries', function($query) use ($company_id) {
-                    $query->where('company_id', $company_id);
-                })
-                ->where('company_id', $company_id)
-                ->orderBy('helper_id')
-                ->select('helper_id', 'name')
-                ->get()
-                ->map(function($account) {
-                    return [
-                        'code' => $account->helper_id,
-                        'name' => $account->name
-                    ];
-                });
+        // Ambil daftar kode bantu yang memiliki transaksi di jurnal umum
+        $accounts = KodeBantu::whereHas('journalEntries', function($query) use ($company_id) {
+                $query->where('company_id', $company_id);
+            })
+            ->where('company_id', $company_id)
+            ->orderBy('helper_id')
+            ->select('helper_id', 'name')
+            ->get()
+            ->map(function($account) {
+                return [
+                    'code' => $account->helper_id,
+                    'name' => $account->name
+                ];
+            });
                 
-            $transactions = collect();
+        $transactions = collect();
             
-            return view('bukubesarpembantu', compact('accounts', 'transactions'));
-        }
+        return view('bukubesarpembantu', compact('accounts', 'transactions'));
+    }
     
     public function getTransactions(Request $request)
     {

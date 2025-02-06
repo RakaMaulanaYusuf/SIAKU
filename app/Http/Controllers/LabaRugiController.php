@@ -81,8 +81,6 @@ class LabaRugiController extends Controller
             ->where('company_id', auth()->user()->active_company_id)
             ->first();
         
-        // Di sini kita tidak perlu membalik tanda dari saldo
-        // Kita langsung return saldo sesuai buku besar
         return $balance;
     }
 

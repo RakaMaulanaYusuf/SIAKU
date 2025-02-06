@@ -13,8 +13,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', ['admin', 'customer']);
+            $table->enum('role', ['staff', 'viewer']);
             $table->foreignId('active_company_id')->nullable()->constrained('companies')->onDelete('set null');
+            $table->foreignId('assigned_company_id')->nullable()->constrained('companies')->onDelete('set null');
             $table->rememberToken();
             $table->timestamps();
         });

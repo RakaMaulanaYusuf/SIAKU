@@ -35,6 +35,7 @@
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h1 class="text-2xl font-bold text-black">Buku Besar Pembantu</h1>
+                        <p class="text-sm text-gray-600 mt-1">Kelola buku besar pembantu perusahaan</p>
                         <div class="flex items-center gap-4 mt-2">
                             <select x-model="selectedAccount" 
                                 class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
@@ -103,13 +104,13 @@
                             <tr>
                                 <td colspan="4" class="py-2 px-4 text-right font-medium border-r">Total:</td>
                                 <td class="py-2 px-4 text-right font-medium border-r" 
-                                    x-text="new Intl.NumberFormat('id-ID').format(transactions.reduce((sum, t) => sum + (Number(t.debit) || 0), 0))">
+                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(transactions.reduce((sum, t) => sum + (Number(t.debit) || 0), 0))">
                                 </td>
                                 <td class="py-2 px-4 text-right font-medium border-r"
-                                    x-text="new Intl.NumberFormat('id-ID').format(transactions.reduce((sum, t) => sum + (Number(t.credit) || 0), 0))">
+                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(transactions.reduce((sum, t) => sum + (Number(t.credit) || 0), 0))">
                                 </td>
                                 <td class="py-2 px-4 text-right font-medium border-r"
-                                    x-text="new Intl.NumberFormat('id-ID').format(transactions[transactions.length - 1]?.balance || 0)">
+                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(transactions[transactions.length - 1]?.balance || 0)">
                                 </td>
                             </tr>
                         </tfoot>

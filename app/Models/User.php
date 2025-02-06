@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
@@ -14,7 +14,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role',
+        'active_company_id',
+        'assigned_company_id'
     ];
 
     protected $hidden = [
@@ -35,9 +37,14 @@ class User extends Authenticatable
         return $this->role === $roleName;
     }
 
-    // app/Models/User.php
     public function activeCompany()
     {
         return $this->belongsTo(Company::class, 'active_company_id');
     }
+
+    public function assignedCompany()
+    {
+        return $this->belongsTo(Company::class, 'assigned_company_id');
+    }
+
 }

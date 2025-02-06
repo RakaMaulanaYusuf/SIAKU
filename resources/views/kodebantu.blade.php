@@ -278,7 +278,7 @@
                             <tr>
                                 <td colspan="3" class="py-2 px-4 text-right font-medium border-r">Total Saldo Awal:</td>
                                 <td class="py-2 px-4 text-right font-medium border-r" 
-                                    x-text="new Intl.NumberFormat('id-ID').format(accounts.reduce((sum, account) => sum + (Number(account.balance) || 0), 0))">
+                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(accounts.reduce((sum, account) => sum + (Number(account.balance) || 0), 0))">
                                 </td>
                                 <td></td>
                             </tr>
