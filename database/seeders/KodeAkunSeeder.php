@@ -12,6 +12,7 @@ class KodeAkunSeeder extends Seeder
         DB::table('kode_akun')->insert([
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '1101',
                 'name' => 'Kas',
                 'helper_table' => '11',
@@ -24,6 +25,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '1102',
                 'name' => 'Piutang Usaha',
                 'helper_table' => '11',
@@ -36,6 +38,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '1103',
                 'name' => 'Sewa Dibayar Dimuka',
                 'helper_table' => '11',
@@ -48,6 +51,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '1104',
                 'name' => 'Persediaan',
                 'helper_table' => '11',
@@ -60,6 +64,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '1201',
                 'name' => 'Tanah',
                 'helper_table' => '11',
@@ -72,6 +77,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '2101',
                 'name' => 'Utang',
                 'helper_table' => '11',
@@ -84,6 +90,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '2102',
                 'name' => 'Utang Gaji',
                 'helper_table' => '11',
@@ -96,6 +103,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '3101',
                 'name' => 'Modal',
                 'helper_table' => '11',
@@ -108,6 +116,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '4101',
                 'name' => 'Pendapatan Jasa',
                 'helper_table' => '11',
@@ -120,6 +129,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '5101',
                 'name' => 'Beban Gaji',
                 'helper_table' => '11',
@@ -132,6 +142,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '5102',
                 'name' => 'Beban Sewa',
                 'helper_table' => '11',
@@ -144,6 +155,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '5103',
                 'name' => 'Beban Lain-Lain',
                 'helper_table' => '11',
@@ -156,6 +168,7 @@ class KodeAkunSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'account_id' => '5104',
                 'name' => 'Beban Persediaan',
                 'helper_table' => '11',

@@ -11,9 +11,15 @@ return new class extends Migration
         Schema::create('kode_akun', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')
-                  ->constrained()
+                  ->constrained('companies')
                   ->onDelete('cascade')
+                  ->nullable(false)
                   ->comment('ID Perusahaan');
+            $table->foreignId('company_period_id')
+                  ->constrained('company_period')
+                  ->onDelete('cascade')
+                  ->nullable(false)
+                  ->comment('ID Period');
             $table->string('account_id')
                   ->comment('Kode Akun');
             $table->string('name')
@@ -39,7 +45,8 @@ return new class extends Migration
 
             $table->index('account_id');
             $table->index('name');
-            $table->unique(['company_id', 'account_id']);
+            // Making the combination unique for company-period-account_id
+            $table->unique(['company_id', 'company_period_id', 'account_id'], 'unique_account_per_company_period');
         });
     }
 

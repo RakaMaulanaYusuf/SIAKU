@@ -11,7 +11,8 @@ class KodeBantuSeeder extends Seeder
     {
         DB::table('kode_bantu')->insert([
             [
-                'company_id' => 1,      // Disesuaikan dengan company_id di CompaniesSeeder
+                'company_id' => 1,
+                'company_period_id' => 1,      // Disesuaikan dengan company_id di CompaniesSeeder
                 'helper_id' => '11',           // Sudah sesuai
                 'name' => 'BANK BRI',          // Sudah sesuai
                 'status' => 'PIUTANG',         // Sudah sesuai
@@ -20,7 +21,8 @@ class KodeBantuSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'company_id' => 2,      // Disesuaikan dengan company_id di CompaniesSeeder
+                'company_id' => 2,
+                'company_period_id' => 3,      // Disesuaikan dengan company_id di CompaniesSeeder
                 'helper_id' => '12',           // Sudah sesuai
                 'name' => 'BANK MANDIRI',      // Sudah sesuai
                 'status' => 'HUTANG',          // Sudah sesuai

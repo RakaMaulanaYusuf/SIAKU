@@ -11,9 +11,9 @@ class CheckActiveCompany
     {
         $user = auth()->user();
         
-        if ($user->role === 'staff' && !$user->active_company_id) {
+        if ($user->role === 'staff' && (!$user->active_company_id || !$user->company_period_id)) {
             return redirect()->route('listP')
-                ->with('warning', 'Silakan pilih perusahaan terlebih dahulu');
+                ->with('warning', 'Silakan pilih perusahaan dan periode terlebih dahulu');
         }
         
         return $next($request);

@@ -12,44 +12,119 @@ use App\Models\AktivaLancar;
 use App\Models\AktivaTetap;
 use App\Models\Kewajiban;
 use App\Models\Ekuitas;
+use App\Models\CompanyPeriod;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class ViewerController extends Controller
 {
+    public function __construct()
+    {
+        // Hanya perlu mengecek apakah user memiliki role viewer
+        $this->middleware(function ($request, $next) {
+            if (auth()->user()->role !== 'viewer') {
+                return redirect()->route('login')
+                    ->with('error', 'Unauthorized access');
+            }
+            return $next($request);
+        });
+    }
+
+    // Method untuk menampilkan daftar periode
+    public function listPeriods()
+    {
+        $company_id = auth()->user()->assigned_company_id;
+        $company = auth()->user()->assignedCompany;
+        
+        $periods = CompanyPeriod::where('company_id', $company_id)
+            ->orderBy('period_year', 'desc')
+            ->orderBy('period_month', 'desc')
+            ->get();
+            
+        return view('listPeriods', compact('periods', 'company'));
+    }
+
+    // Method untuk set periode aktif
+    public function setPeriod(Request $request)
+    {
+        $validated = $request->validate([
+            'period_id' => 'required|exists:company_period,id,company_id,' . auth()->user()->assigned_company_id
+        ]);
+
+        auth()->user()->update([
+            'company_period_id' => $validated['period_id']
+        ]);
+
+        return redirect()->route('vdashboard')
+            ->with('success', 'Periode berhasil diubah');
+    }
+
     public function dashboard()
     {
-        $company_id = auth()->user()->active_company_id;
-        $company = auth()->user()->active_company;
+        if (!auth()->user()->company_period_id) {
+            return redirect()->route('listPeriods')
+                ->with('warning', 'Pilih periode terlebih dahulu');
+        }
 
         return view('vdashboard');
     }
 
     public function kodeakun()
     {
-        $accounts = KodeAkun::where('company_id', auth()->user()->active_company_id)
-            ->orderBy('account_id')  // Diubah dari code ke account_id
+        if (!auth()->user()->company_period_id) {
+            return redirect()->route('listPeriods')
+                ->with('warning', 'Pilih periode terlebih dahulu');
+        }
+
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
+
+        $accounts = KodeAkun::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
+            ->orderBy('account_id')
             ->get();
             
         return view('vkodeakun', compact('accounts'));
     }
 
     public function kodebantu()
-   {
-       $accounts = KodeBantu::where('company_id', auth()->user()->active_company_id)
-           ->orderBy('helper_id')  // Diubah dari code ke helper_id
-           ->get();
-           
-       return view('vkodebantu', compact('accounts'));
-   }
+    {
+        if (!auth()->user()->company_period_id) {
+            return redirect()->route('listPeriods')
+                ->with('warning', 'Pilih periode terlebih dahulu');
+        }
+
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
+
+        $accounts = KodeBantu::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
+            ->orderBy('helper_id')
+            ->get();
+            
+        return view('vkodebantu', compact('accounts'));
+    }
 
     public function jurnalumum()
     {
-        $company_id = auth()->user()->active_company_id;
+        if (!auth()->user()->company_period_id) {
+            return redirect()->route('listPeriods')
+                ->with('warning', 'Pilih periode terlebih dahulu');
+        }
+
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
         
         $journals = JurnalUmum::with(['account', 'helper'])
-            ->where('company_id', $company_id)
+            ->where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
             ->orderBy('date', 'desc')
             ->orderBy('transaction_proof')
             ->get()
@@ -68,7 +143,10 @@ class ViewerController extends Controller
                 ];
             });
 
-        $accounts = KodeAkun::where('company_id', $company_id)
+        $accounts = KodeAkun::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
             ->orderBy('account_id')
             ->get()
             ->map(function($account) {
@@ -78,7 +156,10 @@ class ViewerController extends Controller
                 ];
             });
             
-        $helpers = KodeBantu::where('company_id', $company_id)
+        $helpers = KodeBantu::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
             ->orderBy('helper_id')
             ->get()
             ->map(function($helper) {
@@ -93,14 +174,26 @@ class ViewerController extends Controller
 
     public function bukubesar(Request $request)
     {
-        $company_id = auth()->user()->active_company_id;
+        if (!auth()->user()->company_period_id) {
+            return redirect()->route('listPeriods')
+                ->with('warning', 'Pilih periode terlebih dahulu');
+        }
+
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
         
         // Get accounts list if no specific account is requested
         if (!$request->has('account_id')) {
-            $accounts = KodeAkun::whereHas('journalEntries', function($query) use ($company_id) {
-                    $query->where('company_id', $company_id);
+            $accounts = KodeAkun::whereHas('journalEntries', function($query) use ($company_id, $period_id) {
+                    $query->where([
+                        'company_id' => $company_id,
+                        'company_period_id' => $period_id
+                    ]);
                 })
-                ->where('company_id', $company_id)
+                ->where([
+                    'company_id' => $company_id,
+                    'company_period_id' => $period_id
+                ])
                 ->orderBy('account_id')
                 ->select('account_id', 'name')
                 ->get()
@@ -122,7 +215,7 @@ class ViewerController extends Controller
         ]);
 
         $account_id = $validated['account_id'];
-        $transactions = $this->getAccountTransactions($company_id, $account_id);
+        $transactions = $this->getAccountTransactions($company_id, $period_id, $account_id);
         
         if ($request->wantsJson()) {
             return response()->json($transactions);
@@ -130,34 +223,34 @@ class ViewerController extends Controller
 
         // If PDF download is requested
         if ($request->has('download')) {
-            return $this->downloadPDF($company_id, $account_id, 'buku_besar');
+            return $this->downloadPDF($company_id, $period_id, $account_id, 'buku_besar');
         }
-    }
 
-    public function getTransactions(Request $request)
-    {
-        $validated = $request->validate([
-            'account_id' => 'required|exists:kode_akun,account_id'
-        ]);
-
-        $company_id = auth()->user()->active_company_id;
-        $account_id = $validated['account_id'];
-        
-        $transactions = $this->getAccountTransactions($company_id, $account_id);
-        
-        return response()->json($transactions);
+        return view('vbukubesar', compact('accounts', 'transactions'));
     }
 
     public function bukubesarpembantu(Request $request)
     {
-        $company_id = auth()->user()->active_company_id;
+        if (!auth()->user()->company_period_id) {
+            return redirect()->route('listPeriods')
+                ->with('warning', 'Pilih periode terlebih dahulu');
+        }
+
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
         
         // Get helper accounts list if no specific helper is requested
         if (!$request->has('helper_id')) {
-            $accounts = KodeBantu::whereHas('journalEntries', function($query) use ($company_id) {
-                    $query->where('company_id', $company_id);
+            $accounts = KodeBantu::whereHas('journalEntries', function($query) use ($company_id, $period_id) {
+                    $query->where([
+                        'company_id' => $company_id,
+                        'company_period_id' => $period_id
+                    ]);
                 })
-                ->where('company_id', $company_id)
+                ->where([
+                    'company_id' => $company_id,
+                    'company_period_id' => $period_id
+                ])
                 ->orderBy('helper_id')
                 ->select('helper_id', 'name')
                 ->get()
@@ -179,7 +272,7 @@ class ViewerController extends Controller
         ]);
 
         $helper_id = $validated['helper_id'];
-        $transactions = $this->getHelperTransactions($company_id, $helper_id);
+        $transactions = $this->getHelperTransactions($company_id, $period_id, $helper_id);
         
         if ($request->wantsJson()) {
             return response()->json($transactions);
@@ -187,105 +280,224 @@ class ViewerController extends Controller
 
         // If PDF download is requested
         if ($request->has('download')) {
-            return $this->downloadPDF($company_id, $helper_id, 'buku_besar_pembantu');
+            return $this->downloadPDF($company_id, $period_id, $helper_id, 'buku_besar_pembantu');
+        }
+
+        return view('vbukubesarpembantu', compact('accounts', 'transactions'));
+    }
+
+    /**
+     * Get transactions for buku besar
+     */
+    public function getTransactions(Request $request)
+    {
+        if (!auth()->user()->company_period_id) {
+            return response()->json(['error' => 'No active period selected'], 400);
+        }
+
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
+
+        // Get account_id from request
+        $account_id = $request->account_id;
+        
+        if (!$account_id) {
+            return response()->json(['error' => 'Account ID is required'], 400);
+        }
+
+        // Verify account exists
+        $accountExists = KodeAkun::where([
+            'company_id' => $company_id,
+            'company_period_id' => $period_id,
+            'account_id' => $account_id
+        ])->exists();
+        
+        if (!$accountExists) {
+            return response()->json(['error' => 'Account not found'], 404);
+        }
+
+        try {
+            // Get transactions
+            $transactions = $this->getAccountTransactions($company_id, $period_id, $account_id);
+            return response()->json($transactions);
+        } catch (\Exception $e) {
+            \Log::error('Error getting transactions: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to get transactions: ' . $e->getMessage()], 500);
         }
     }
 
+    /**
+     * Get transactions for buku besar pembantu
+     */
     public function getTransactionsHelper(Request $request)
     {
-        $validated = $request->validate([
-            'helper_id' => 'required|exists:kode_bantu,helper_id'
-        ]);
+        if (!auth()->user()->company_period_id) {
+            return response()->json(['error' => 'No active period selected'], 400);
+        }
 
-        $company_id = auth()->user()->active_company_id;
-        $helper_id = $validated['helper_id'];
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
+
+        // Get helper_id from request
+        $helper_id = $request->helper_id;
         
-        $transactions = $this->getHelperTransactions($company_id, $helper_id);
+        if (!$helper_id) {
+            return response()->json(['error' => 'Helper ID is required'], 400);
+        }
+
+        // Verify helper exists
+        $helperExists = KodeBantu::where([
+            'company_id' => $company_id,
+            'company_period_id' => $period_id,
+            'helper_id' => $helper_id
+        ])->exists();
         
-        return response()->json($transactions);
+        if (!$helperExists) {
+            return response()->json(['error' => 'Helper not found'], 404);
+        }
+
+        try {
+            // Get transactions
+            $transactions = $this->getHelperTransactions($company_id, $period_id, $helper_id);
+            return response()->json($transactions);
+        } catch (\Exception $e) {
+            \Log::error('Error getting helper transactions: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to get transactions: ' . $e->getMessage()], 500);
+        }
     }
 
-    private function getAccountTransactions($company_id, $account_id)
+    private function getAccountTransactions($company_id, $period_id, $account_id)
     {
-        $account = KodeAkun::where('company_id', $company_id)
-            ->where('account_id', $account_id)
-            ->first();
+        try {
+            $account = KodeAkun::where([
+                    'company_id' => $company_id,
+                    'company_period_id' => $period_id,
+                    'account_id' => $account_id
+                ])
+                ->first();
 
-        $transactions = JurnalUmum::where('company_id', $company_id)
-            ->where('account_id', $account_id)
-            ->orderBy('date')
-            ->orderBy('id')
-            ->get();
-            
-        $running_balance = $account->balance_type === 'DEBIT' ? 
-            ($account->debit ?? 0) : 
-            ($account->credit ?? 0);
-
-        return $transactions->map(function($transaction, $index) use (&$running_balance, $account) {
-            if ($account->balance_type === 'DEBIT') {
-                $running_balance += ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
-            } else {
-                $running_balance += ($transaction->credit ?? 0) - ($transaction->debit ?? 0);
+            if (!$account) {
+                return collect();
             }
 
-            return [
-                'no' => $index + 1,
-                'date' => $transaction->date->format('Y-m-d'),
-                'bukti' => $transaction->transaction_proof,
-                'description' => $transaction->description,
-                'debit' => $transaction->debit,
-                'credit' => $transaction->credit,
-                'balance' => $running_balance
-            ];
-        });
-    }
-
-    private function getHelperTransactions($company_id, $helper_id)
-    {
-        $helper = KodeBantu::where('company_id', $company_id)
-            ->where('helper_id', $helper_id)
-            ->first();
-
-        $transactions = JurnalUmum::where('company_id', $company_id)
-            ->where('helper_id', $helper_id)
-            ->orderBy('date')
-            ->orderBy('id')
-            ->get();
+            $transactions = JurnalUmum::where([
+                    'company_id' => $company_id,
+                    'company_period_id' => $period_id,
+                    'account_id' => $account_id
+                ])
+                ->orderBy('date')
+                ->orderBy('id')
+                ->get();
             
-        $running_balance = 0;
+            // Match the same logic as BukuBesarController
+            $running_balance = $account->balance_type === 'DEBIT' ? 
+                ($account->debit ?? 0) : 
+                ($account->credit ?? 0);
 
-        return $transactions->map(function($transaction, $index) use (&$running_balance) {
-            $running_balance += ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+            return $transactions->map(function($transaction, $index) use (&$running_balance, $account) {
+                // Calculate balance based on account type
+                if ($account->balance_type === 'DEBIT') {
+                    $running_balance += ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+                } else {
+                    $running_balance += ($transaction->credit ?? 0) - ($transaction->debit ?? 0);
+                }
 
-            return [
-                'no' => $index + 1,
-                'date' => $transaction->date->format('Y-m-d'),
-                'bukti' => $transaction->transaction_proof,
-                'description' => $transaction->description,
-                'debit' => $transaction->debit,
-                'credit' => $transaction->credit,
-                'balance' => $running_balance
-            ];
-        });
+                return [
+                    'no' => $index + 1,
+                    'date' => $transaction->date->format('Y-m-d'),
+                    'bukti' => $transaction->transaction_proof,
+                    'description' => $transaction->description,
+                    'debit' => $transaction->debit,
+                    'credit' => $transaction->credit,
+                    'balance' => $running_balance
+                ];
+            });
+        } catch (\Exception $e) {
+            \Log::error('Error in getAccountTransactions: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
-    public function labarugi() {
-        $company_id = auth()->user()->active_company_id;
+    private function getHelperTransactions($company_id, $period_id, $helper_id)
+    {
+        try {
+            $helper = KodeBantu::where([
+                    'company_id' => $company_id,
+                    'company_period_id' => $period_id,
+                    'helper_id' => $helper_id
+                ])
+                ->first();
+
+            if (!$helper) {
+                return collect();
+            }
+
+            $transactions = JurnalUmum::where([
+                    'company_id' => $company_id,
+                    'company_period_id' => $period_id,
+                    'helper_id' => $helper_id
+                ])
+                ->orderBy('date')
+                ->orderBy('id')
+                ->get();
+            
+            // Initialize running balance with the initial balance from KodeBantu
+            $running_balance = $helper->balance ?? 0;
+
+            return $transactions->map(function($transaction, $index) use (&$running_balance, $helper) {
+                // Calculate balance based on helper status
+                if ($helper->status === 'PIUTANG') {
+                    // For PIUTANG: debit increases, credit decreases
+                    $running_balance += ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+                } else {
+                    // For HUTANG: debit decreases, credit increases
+                    $running_balance -= ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+                }
+
+                return [
+                    'no' => $index + 1,
+                    'date' => $transaction->date->format('Y-m-d'),
+                    'bukti' => $transaction->transaction_proof,
+                    'description' => $transaction->description,
+                    'debit' => $transaction->debit,
+                    'credit' => $transaction->credit,
+                    'balance' => $running_balance
+                ];
+            });
+        } catch (\Exception $e) {
+            \Log::error('Error in getHelperTransactions: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function labarugi() 
+    {
+        if (!auth()->user()->company_period_id) {
+            return redirect()->route('listPeriods')
+                ->with('warning', 'Pilih periode terlebih dahulu');
+        }
+
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
         
-        // Get available accounts for dropdown
-        $availableAccounts = KodeAkun::where('company_id', $company_id)
-            ->where('report_type', 'LABARUGI')
+        $availableAccounts = KodeAkun::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id,
+                'report_type' => 'LABARUGI'
+            ])
             ->get()
             ->map(function($account) {
                 return [
-                    'account_id' => $account->account_id, 
+                    'account_id' => $account->account_id,
                     'name' => $account->name,
                     'balance' => $this->getBukuBesarBalance($account->account_id)
                 ];
             });
     
-        // Get existing rows for each category
-        $pendapatan = Pendapatan::where('company_id', $company_id)
+        $pendapatan = Pendapatan::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -298,8 +510,11 @@ class ViewerController extends Controller
                 ];
             });
     
-        $hpp = HPP::where('company_id', $company_id)
-            ->with('account') 
+        $hpp = HPP::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
+            ->with('account')
             ->get()
             ->map(function($item) {
                 return [
@@ -310,8 +525,10 @@ class ViewerController extends Controller
                     'balance' => $this->getBukuBesarBalance($item->account_id)
                 ];
             });
-    
-        $biaya = BiayaOperasional::where('company_id', $company_id)
+            $biaya = BiayaOperasional::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -327,38 +544,46 @@ class ViewerController extends Controller
         return view('vlabarugi', compact('pendapatan', 'hpp', 'biaya', 'availableAccounts'));
     }
 
-    private function getBukuBesarBalance($account_id) {
+    private function getBukuBesarBalance($account_id) 
+    {
         $bukuBesarController = new BukuBesarController();
         $balance = $bukuBesarController->getAccountBalance(
-            auth()->user()->active_company_id, 
+            auth()->user()->assigned_company_id,
+            auth()->user()->company_period_id,
             $account_id
         );
-        
-        // Get account details
-        $account = KodeAkun::where('account_id', $account_id)
-            ->where('company_id', auth()->user()->active_company_id)
-            ->first();
         
         return $balance;
     }
 
-    public function neraca() {
-        $company_id = auth()->user()->active_company_id;
+    public function neraca() 
+    {
+        if (!auth()->user()->company_period_id) {
+            return redirect()->route('listPeriods')
+                ->with('warning', 'Pilih periode terlebih dahulu');
+        }
+
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
         
-        // Get available accounts for dropdown
-        $availableAccounts = KodeAkun::where('company_id', $company_id)
-            ->where('report_type', 'NERACA')
+        $availableAccounts = KodeAkun::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id,
+                'report_type' => 'NERACA'
+            ])
             ->get()
             ->map(function($account) {
                 return [
-                    'account_id' => $account->account_id, 
+                    'account_id' => $account->account_id,
                     'name' => $account->name,
                     'balance' => $this->getBukuBesarBalance($account->account_id)
                 ];
             });
     
-        // Get existing rows for each category
-        $aktivalancar = AktivaLancar::where('company_id', $company_id)
+        $aktivalancar = AktivaLancar::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -371,8 +596,11 @@ class ViewerController extends Controller
                 ];
             });
     
-        $aktivatetap = AktivaTetap::where('company_id', $company_id)
-            ->with('account') 
+        $aktivatetap = AktivaTetap::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
+            ->with('account')
             ->get()
             ->map(function($item) {
                 return [
@@ -384,7 +612,10 @@ class ViewerController extends Controller
                 ];
             });
     
-        $kewajiban = Kewajiban::where('company_id', $company_id)
+        $kewajiban = Kewajiban::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -397,7 +628,10 @@ class ViewerController extends Controller
                 ];
             });
 
-        $ekuitas = Ekuitas::where('company_id', $company_id)
+        $ekuitas = Ekuitas::where([
+                'company_id' => $company_id,
+                'company_period_id' => $period_id
+            ])
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -411,5 +645,39 @@ class ViewerController extends Controller
             });
     
         return view('vneraca', compact('aktivalancar', 'aktivatetap', 'kewajiban', 'ekuitas', 'availableAccounts'));
+    }
+    
+    /**
+     * Generate PDF for download
+     */
+    public function downloadPDF($company_id, $period_id, $id, $type)
+    {
+        // Your PDF generation code here
+        // This is a placeholder based on your route definitions
+        return redirect()->back()->with('warning', 'PDF generation not implemented');
+    }
+    
+    /**
+     * Generate PDF for download (helper version)
+     */
+    public function downloadPDFHelper(Request $request)
+    {
+        $helper_id = $request->helper_id;
+        $company_id = auth()->user()->assigned_company_id;
+        $period_id = auth()->user()->company_period_id;
+        
+        // Your PDF generation code here
+        // This is a placeholder based on your route definitions
+        return redirect()->back()->with('warning', 'PDF generation not implemented');
+    }
+    
+    /**
+     * Generate PDF for financial reports
+     */
+    public function generatePDF(Request $request)
+    {
+        // Your PDF generation code here
+        // This is a placeholder based on your route definitions
+        return redirect()->back()->with('warning', 'PDF generation not implemented');
     }
 }

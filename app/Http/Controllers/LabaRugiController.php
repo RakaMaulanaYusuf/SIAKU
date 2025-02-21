@@ -11,11 +11,34 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class LabaRugiController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Silakan pilih perusahaan dan periode terlebih dahulu'
+                ], 400);
+            }
+            return $next($request);
+        })->except(['index']);
+    }
+
     public function index() {
+        if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+            return view('labarugi', [
+                'pendapatan' => collect(),
+                'hpp' => collect(),
+                'biaya' => collect(),
+                'availableAccounts' => collect()
+            ]);
+        }
+
         $company_id = auth()->user()->active_company_id;
+        $period_id = auth()->user()->company_period_id;
         
-        // Get available accounts for dropdown
         $availableAccounts = KodeAkun::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->where('report_type', 'LABARUGI')
             ->get()
             ->map(function($account) {
@@ -26,8 +49,8 @@ class LabaRugiController extends Controller
                 ];
             });
     
-        // Get existing rows for each category
         $pendapatan = Pendapatan::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -41,6 +64,7 @@ class LabaRugiController extends Controller
             });
     
         $hpp = HPP::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->with('account') 
             ->get()
             ->map(function($item) {
@@ -54,6 +78,7 @@ class LabaRugiController extends Controller
             });
     
         $biaya = BiayaOperasional::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -72,28 +97,32 @@ class LabaRugiController extends Controller
     private function getBukuBesarBalance($account_id) {
         $bukuBesarController = new BukuBesarController();
         $balance = $bukuBesarController->getAccountBalance(
-            auth()->user()->active_company_id, 
+            auth()->user()->active_company_id,
+            auth()->user()->company_period_id,
             $account_id
         );
-        
-        // Get account details
-        $account = KodeAkun::where('account_id', $account_id)
-            ->where('company_id', auth()->user()->active_company_id)
-            ->first();
-        
         return $balance;
     }
 
     private function getAccountCurrentPosition($account_id)
     {
         $company_id = auth()->user()->active_company_id;
+        $period_id = auth()->user()->company_period_id;
 
-        // Check current account position (pendapatan/hpp/biaya)
-        if (Pendapatan::where('company_id', $company_id)->where('account_id', $account_id)->exists()) {
+        if (Pendapatan::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
+            ->where('account_id', $account_id)
+            ->exists()) {
             return 'pendapatan';
-        } elseif (HPP::where('company_id', $company_id)->where('account_id', $account_id)->exists()) {
+        } elseif (HPP::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
+            ->where('account_id', $account_id)
+            ->exists()) {
             return 'hpp';
-        } elseif (BiayaOperasional::where('company_id', $company_id)->where('account_id', $account_id)->exists()) {
+        } elseif (BiayaOperasional::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
+            ->where('account_id', $account_id)
+            ->exists()) {
             return 'biaya';
         }
         return null;
@@ -110,19 +139,18 @@ class LabaRugiController extends Controller
             ]);
 
             $company_id = auth()->user()->active_company_id;
+            $period_id = auth()->user()->company_period_id;
             
-            // Check if account exists and belongs to company
             $account = KodeAkun::where('company_id', $company_id)
+                ->where('company_period_id', $period_id)
                 ->where('account_id', $validated['account_id'])
                 ->firstOrFail();
 
-            // Check if account is already used in another category
             $currentPosition = $this->getAccountCurrentPosition($validated['account_id']);
             if ($currentPosition && $currentPosition !== $validated['type']) {
                 throw new \Exception('Akun ini sudah digunakan di kategori ' . ucfirst($currentPosition));
             }
             
-            // Determine which model to use based on type
             $model = match($validated['type']) {
                 'pendapatan' => Pendapatan::class,
                 'hpp' => HPP::class,
@@ -130,10 +158,10 @@ class LabaRugiController extends Controller
                 default => throw new \Exception('Invalid type')
             };
 
-            // Create or update the record
             $record = $model::updateOrCreate(
                 [
                     'company_id' => $company_id,
+                    'company_period_id' => $period_id,
                     'account_id' => $validated['account_id']
                 ],
                 [
@@ -172,13 +200,13 @@ class LabaRugiController extends Controller
             ]);
 
             $company_id = auth()->user()->active_company_id;
+            $period_id = auth()->user()->company_period_id;
 
-            // Check if account exists and belongs to company
             $account = KodeAkun::where('company_id', $company_id)
+                ->where('company_period_id', $period_id)
                 ->where('account_id', $validated['account_id'])
                 ->firstOrFail();
 
-            // Determine which model to use
             $model = match($type) {
                 'pendapatan' => Pendapatan::class,
                 'hpp' => HPP::class,
@@ -187,9 +215,9 @@ class LabaRugiController extends Controller
             };
 
             $item = $model::where('company_id', $company_id)
+                ->where('company_period_id', $period_id)
                 ->findOrFail($id);
             
-            // Check if new account_id is different and already used
             if ($item->account_id !== $validated['account_id']) {
                 $currentPosition = $this->getAccountCurrentPosition($validated['account_id']);
                 if ($currentPosition && $currentPosition !== $type) {
@@ -223,6 +251,7 @@ class LabaRugiController extends Controller
     {
         try {
             $company_id = auth()->user()->active_company_id;
+            $period_id = auth()->user()->company_period_id;
 
             $model = match($type) {
                 'pendapatan' => Pendapatan::class,
@@ -232,6 +261,7 @@ class LabaRugiController extends Controller
             };
 
             $item = $model::where('company_id', $company_id)
+                ->where('company_period_id', $period_id)
                 ->findOrFail($id);
             
             $item->delete();
@@ -253,10 +283,10 @@ class LabaRugiController extends Controller
     {
         try {
             $company_id = auth()->user()->active_company_id;
+            $period_id = auth()->user()->company_period_id;
             
-            $data = $this->getAllData($company_id);
+            $data = $this->getAllData($company_id, $period_id);
             
-            // Calculate totals
             $totalPendapatan = $data['pendapatan']->sum('balance');
             $totalHPP = $data['hpp']->sum('balance');
             $totalBiaya = $data['operasional']->sum('balance');
@@ -270,6 +300,7 @@ class LabaRugiController extends Controller
             ];
 
             $data['company'] = auth()->user()->active_company;
+            $data['period'] = auth()->user()->activePeriod;
             $data['tanggal'] = now()->translatedFormat('d F Y');
 
             $pdf = PDF::loadView('pdf.labarugi', $data);
@@ -281,10 +312,11 @@ class LabaRugiController extends Controller
         }
     }
 
-    private function getAllData($company_id)
+    private function getAllData($company_id, $period_id)
     {
         // Get Pendapatan data
         $pendapatan = Pendapatan::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -298,6 +330,7 @@ class LabaRugiController extends Controller
 
         // Get HPP data
         $hpp = HPP::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -310,7 +343,8 @@ class LabaRugiController extends Controller
             });
 
         // Get Biaya Operasional data
-        $biaya = BiayaOperasional::where('company_id', $company_id)
+        $operasional = BiayaOperasional::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->with('account')
             ->get()
             ->map(function($item) {
@@ -329,9 +363,11 @@ class LabaRugiController extends Controller
     {
         try {
             $company_id = auth()->user()->active_company_id;
+            $period_id = auth()->user()->company_period_id;
 
             // Get account details
             $account = KodeAkun::where('company_id', $company_id)
+                ->where('company_period_id', $period_id)
                 ->where('account_id', $account_id)
                 ->firstOrFail();
 
@@ -359,9 +395,11 @@ class LabaRugiController extends Controller
     {
         try {
             $company_id = auth()->user()->active_company_id;
+            $period_id = auth()->user()->company_period_id;
             
             // Refresh all account balances
             $accounts = KodeAkun::where('company_id', $company_id)
+                ->where('company_period_id', $period_id)
                 ->where('report_type', 'LABARUGI')
                 ->get()
                 ->map(function($account) {

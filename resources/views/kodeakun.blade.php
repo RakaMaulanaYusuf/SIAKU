@@ -28,13 +28,20 @@
             alert('Kode dan Nama Akun harus diisi');
             return false;
         }
-        if (row.balance_type === 'DEBIT' && !row.debit) {
-            alert('Kolom debit harus diisi ketika pos saldo DEBIT');
+        if (row.balance_type === 'DEBIT' && row.credit) {
+            alert('Kolom kredit harus kosong ketika pos saldo DEBIT');
             return false;
         }
-        if (row.balance_type === 'CREDIT' && !row.credit) {
-            alert('Kolom kredit harus diisi ketika pos saldo CREDIT');
+        if (row.balance_type === 'CREDIT' && row.debit) {
+            alert('Kolom debit harus kosong ketika pos saldo CREDIT');
             return false;
+        }
+        // Set default value 0 if empty
+        if (row.balance_type === 'DEBIT') {
+            row.debit = row.debit || 0;
+        }
+        if (row.balance_type === 'CREDIT') {
+            row.credit = row.credit || 0;
         }
         return true;
     },
@@ -136,7 +143,8 @@
     }">
     <div class="flex overflow-hidden">
         <x-side-bar-menu></x-side-bar-menu>
-        <div id="main-content" class="relative text-black ml-72 font-poppins w-full h-full overflow-y-auto">
+        <div id="main-content" class="relative text-black font-poppins w-full h-full overflow-y-auto">
+            {{-- <x-side-bar-menu></x-side-bar-menu> --}}
             <x-nav-bar></x-nav-bar>
             <div class="bg-white p-6 mx-6 mt-6 rounded-xl shadow-sm">
                 <div class="flex justify-between items-center mb-6">

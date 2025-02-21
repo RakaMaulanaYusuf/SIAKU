@@ -11,6 +11,7 @@ class BiayaOperasional extends Model
     
     protected $fillable = [
         'company_id',
+        'company_period_id',
         'account_id',
         'name',
         'amount'
@@ -20,28 +21,25 @@ class BiayaOperasional extends Model
         'amount' => 'decimal:2',
     ];
 
-    /**
-     * Get the company that owns the BiayaOperasional
-     */
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
 
-    /**
-     * Get the account associated with the BiayaOperasional
-     */
+    public function period(): BelongsTo
+    {
+        return $this->belongsTo(CompanyPeriod::class, 'company_period_id');
+    }
+
     public function account(): BelongsTo
     {
         return $this->belongsTo(KodeAkun::class, 'account_id', 'account_id');
     }
 
-    /**
-     * Scope to get total biaya operasional for a company
-     */
-    public function scopeTotalForCompany($query, $company_id)
+    public function scopeTotalForCompany($query, $company_id, $period_id)
     {
         return $query->where('company_id', $company_id)
+                    ->where('company_period_id', $period_id)
                     ->sum('amount');
     }
 }

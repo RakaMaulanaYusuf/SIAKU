@@ -14,6 +14,7 @@ class JurnalUmum extends Model
 
     protected $fillable = [
         'company_id',
+        'company_period_id',
         'date',
         'transaction_proof',
         'description',
@@ -30,8 +31,8 @@ class JurnalUmum extends Model
     ];
 
     protected $attributes = [
-        'debit' => null,  // Set default ke null
-        'credit' => null, // Set default ke null
+        'debit' => null,
+        'credit' => null,
     ];
 
     protected $rules = [
@@ -57,6 +58,11 @@ class JurnalUmum extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function period()
+    {
+        return $this->belongsTo(CompanyPeriod::class, 'company_period_id');
     }
 
     protected function validateData($data)

@@ -8,25 +8,20 @@ class Company extends Model
 {
     protected $fillable = [
         'name',
-        'type',
-        'status',
-        'period_month',
-        'period_year'
+        'type', 
+        'address',
+        'phone',
+        'email',
+        'status'
     ];
+
+    public function periods()
+    {
+        return $this->hasMany(CompanyPeriod::class);
+    }
 
     public function users()
     {
         return $this->hasMany(User::class, 'active_company_id');
-    }
-
-    public function getInitialAttribute()
-    {
-        return substr($this->name, 3, 1);
-    }
-
-    // Scope untuk memfilter data berdasarkan company
-    public function scopeForCompany($query, $companyId)
-    {
-        return $query->where('company_id', $companyId);
     }
 }

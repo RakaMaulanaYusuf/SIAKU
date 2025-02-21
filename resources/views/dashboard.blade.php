@@ -7,7 +7,7 @@
     <div class="flex overflow-hidden">
         <x-side-bar-menu></x-side-bar-menu>
         
-        <div id="main-content" class="relative text-black ml-72 font-poppins w-full h-full overflow-y-auto">
+        <div id="main-content" class="relative text-black font-poppins w-full h-full overflow-y-auto">
             <!-- Current Company Indicator -->
             <x-nav-bar></x-nav-bar>
 

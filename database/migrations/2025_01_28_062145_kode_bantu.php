@@ -11,9 +11,15 @@ return new class extends Migration
         Schema::create('kode_bantu', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')
-                  ->constrained()
+                  ->constrained('companies')
                   ->onDelete('cascade')
+                  ->nullable(false)
                   ->comment('ID Perusahaan');
+            $table->foreignId('company_period_id')
+                  ->constrained('company_period')
+                  ->onDelete('cascade')
+                  ->nullable(false)
+                  ->comment('ID Period');
             $table->string('helper_id')
                   ->comment('Kode Bantu');
             $table->string('name')
@@ -23,13 +29,13 @@ return new class extends Migration
                   ->comment('Status');
             $table->decimal('balance', 15, 2)
                   ->default(0)
-                  ->nullable()
                   ->comment('Saldo Awal');
             $table->timestamps();
 
             $table->index('helper_id');
             $table->index('name');
-            $table->unique(['company_id', 'helper_id']);
+            // Making the combination unique for company-period-helper_id
+            $table->unique(['company_id', 'company_period_id', 'helper_id'], 'unique_helper_per_company_period');
         });
     }
 

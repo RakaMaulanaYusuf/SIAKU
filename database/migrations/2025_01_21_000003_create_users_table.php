@@ -16,6 +16,7 @@ return new class extends Migration
             $table->enum('role', ['staff', 'viewer']);
             $table->foreignId('active_company_id')->nullable()->constrained('companies')->onDelete('set null');
             $table->foreignId('assigned_company_id')->nullable()->constrained('companies')->onDelete('set null');
+            $table->foreignId('company_period_id')->nullable()->constrained('company_period')->onDelete('set null');
             $table->rememberToken();
             $table->timestamps();
         });

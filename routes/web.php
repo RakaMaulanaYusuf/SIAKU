@@ -16,7 +16,7 @@ use App\Http\Middleware\LoginMiddleware;
 use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('login');
 })->name('welcome');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -28,8 +28,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['auth', LoginMiddleware::class . ':staff'])->group(function () {
         Route::get('/listP', [CompanyController::class, 'index'])->name('listP');
         Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
-        Route::post('/companies/{company}/set-active', [CompanyController::class, 'setActive'])
-            ->name('companies.setActive');
+        Route::post('/companies/{company}/set-active', [CompanyController::class, 'setActive'])->name('companies.setActive');
+        Route::post('/periods', [CompanyController::class, 'storePeriod'])->name('periods.store');
 
         Route::middleware(CheckActiveCompany::class)->group(function () {
             //Dashboard
@@ -87,6 +87,9 @@ Route::middleware('auth')->group(function () {
     // Routes for viewer
     Route::middleware(['auth', LoginMiddleware::class . ':viewer'])->group(function () {
         Route::middleware(CheckActiveCompany::class)->group(function () {
+            Route::get('/listPeriods', [ViewerController::class, 'listPeriods'])->name('listPeriods');
+            Route::post('/periods/set', [ViewerController::class, 'setPeriod'])->name('setPeriod');
+
             Route::get('/vdashboard', [ViewerController::class, 'dashboard'])->name('vdashboard');
 
             Route::get('/vkodeakun', [viewerController::class, 'kodeakun'])->name('vkodeakun');

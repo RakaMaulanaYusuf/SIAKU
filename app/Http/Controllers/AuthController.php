@@ -25,6 +25,7 @@ class AuthController extends Controller
             
             if ($user->role === 'viewer') {
                 $user->update(['active_company_id' => $user->assigned_company_id]);
+                $user->update(['company_period_id' => $user->assigned_company_period_id]);
                 return redirect()->route('vdashboard');
             } else {
                 return redirect()->route('listP');

@@ -10,13 +10,26 @@ use Illuminate\Support\Facades\DB;
 
 class JurnalUmumController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Silakan pilih perusahaan dan periode terlebih dahulu'
+                ], 400);
+            }
+            return $next($request);
+        })->except(['index']);
+    }
+
     private function checkBalance($journals)
     {
         $totalDebit = $journals->sum('debit') ?? 0;
         $totalCredit = $journals->sum('credit') ?? 0;
         
         $status = [
-            'is_balanced' => abs($totalDebit - $totalCredit) < 0.01, // Using small epsilon for floating point comparison
+            'is_balanced' => abs($totalDebit - $totalCredit) < 0.01,
             'total_debit' => $totalDebit,
             'total_credit' => $totalCredit,
             'message' => abs($totalDebit - $totalCredit) < 0.01 ? 
@@ -29,10 +42,21 @@ class JurnalUmumController extends Controller
 
     public function index()
     {
+        if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+            return view('jurnalumum', [
+                'journals' => collect(),
+                'accounts' => collect(),
+                'helpers' => collect(),
+                'balanceStatus' => null
+            ]);
+        }
+
         $company_id = auth()->user()->active_company_id;
+        $period_id = auth()->user()->company_period_id;
         
         $journals = JurnalUmum::with(['account', 'helper'])
             ->where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->orderBy('date', 'desc')
             ->orderBy('transaction_proof')
             ->get()
@@ -51,10 +75,10 @@ class JurnalUmumController extends Controller
                 ];
             });
 
-        // Check balance
         $balanceStatus = $this->checkBalance(collect($journals));
 
         $accounts = KodeAkun::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->orderBy('account_id')
             ->get()
             ->map(function($account) {
@@ -65,6 +89,7 @@ class JurnalUmumController extends Controller
             });
             
         $helpers = KodeBantu::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->orderBy('helper_id')
             ->get()
             ->map(function($helper) {
@@ -90,17 +115,11 @@ class JurnalUmumController extends Controller
                 'credit' => 'required_without:debit|nullable|numeric|min:0',
             ]);
 
-            if (!auth()->user()->active_company_id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Silakan pilih perusahaan terlebih dahulu'
-                ], 400);
-            }
-
             DB::beginTransaction();
             try {
                 $journal = JurnalUmum::create([
                     'company_id' => auth()->user()->active_company_id,
+                    'company_period_id' => auth()->user()->company_period_id,
                     'date' => $validated['date'],
                     'transaction_proof' => $validated['transaction_proof'],
                     'description' => $validated['description'],
@@ -110,7 +129,6 @@ class JurnalUmumController extends Controller
                     'credit' => $validated['credit'],
                 ]);
 
-                // Load relationships
                 $journal->load(['account', 'helper']);
 
                 $responseData = [
@@ -150,7 +168,8 @@ class JurnalUmumController extends Controller
     public function update(Request $request, JurnalUmum $jurnalUmum)
     {
         try {
-            if ($jurnalUmum->company_id !== auth()->user()->active_company_id) {
+            if ($jurnalUmum->company_id !== auth()->user()->active_company_id || 
+                $jurnalUmum->company_period_id !== auth()->user()->company_period_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized'
@@ -179,7 +198,6 @@ class JurnalUmumController extends Controller
                     'credit' => $validated['credit'],
                 ]);
 
-                // Load relationships
                 $jurnalUmum->load(['account', 'helper']);
 
                 $responseData = [
@@ -218,7 +236,8 @@ class JurnalUmumController extends Controller
     public function destroy(JurnalUmum $jurnalUmum)
     {
         try {
-            if ($jurnalUmum->company_id !== auth()->user()->active_company_id) {
+            if ($jurnalUmum->company_id !== auth()->user()->active_company_id || 
+                $jurnalUmum->company_period_id !== auth()->user()->company_period_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized'

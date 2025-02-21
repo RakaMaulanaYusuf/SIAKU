@@ -5,8 +5,9 @@
 @section('page')
 <div class="bg-gray-50 min-h-screen flex flex-col">
    <div class="flex overflow-hidden">
-       <x-side-bar-customer></x-side-bar-customer>
-       <div id="main-content" class="relative text-black ml-72 font-poppins w-full h-full overflow-y-auto">
+        <x-side-bar-viewer></x-side-bar-viewer>
+       <div id="main-content" class="relative text-black font-poppins w-full h-full overflow-y-auto">
+        <x-nav-bar-viewer></x-nav-bar-viewer>
            <!-- Header Box -->
            <div class="bg-white p-6 mx-6 mt-6 rounded-xl shadow-sm">
                <div class="flex justify-between items-center">

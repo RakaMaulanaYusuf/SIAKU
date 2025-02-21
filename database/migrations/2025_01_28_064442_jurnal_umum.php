@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::create('jurnal_umum', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade')->nullable(false);
+            $table->foreignId('company_period_id')->constrained('company_period')->onDelete('cascade')->nullable(false);
             $table->date('date');
             $table->string('transaction_proof');
             $table->text('description');

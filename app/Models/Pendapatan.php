@@ -11,6 +11,7 @@ class Pendapatan extends Model
     
     protected $fillable = [
         'company_id',
+        'company_period_id',
         'account_id',
         'name',
         'amount'
@@ -20,17 +21,16 @@ class Pendapatan extends Model
         'amount' => 'decimal:2',
     ];
 
-    /**
-     * Get the company that owns the Pendapatan
-     */
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
 
-    /**
-     * Get the account associated with the Pendapatan
-     */
+    public function period(): BelongsTo
+    {
+        return $this->belongsTo(CompanyPeriod::class, 'company_period_id');
+    }
+
     public function account(): BelongsTo
     {
         return $this->belongsTo(KodeAkun::class, 'account_id', 'account_id');

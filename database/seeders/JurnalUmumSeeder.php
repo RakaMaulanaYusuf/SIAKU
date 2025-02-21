@@ -12,6 +12,7 @@ class JurnalUmumSeeder extends Seeder
         DB::table('jurnal_umum')->insert([
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-01',
                 'transaction_proof' => 'TRX001',
                 'description' => 'Pembelian Barang',
@@ -24,6 +25,7 @@ class JurnalUmumSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-01',
                 'transaction_proof' => 'TRX001',
                 'description' => 'Pembelian Barang',
@@ -36,6 +38,7 @@ class JurnalUmumSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-02',
                 'transaction_proof' => 'TRX002',
                 'description' => 'Pembayaran Gaji Karyawan',
@@ -48,6 +51,7 @@ class JurnalUmumSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-02',
                 'transaction_proof' => 'TRX002',
                 'description' => 'Pembayaran Gaji Karyawan',
@@ -60,6 +64,7 @@ class JurnalUmumSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-03',
                 'transaction_proof' => 'TRX003',
                 'description' => 'Pendapatan Jasa',
@@ -72,6 +77,7 @@ class JurnalUmumSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-03',
                 'transaction_proof' => 'TRX003',
                 'description' => 'Pendapatan Jasa',
@@ -84,6 +90,7 @@ class JurnalUmumSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-04',
                 'transaction_proof' => 'TRX004',
                 'description' => 'Pembayaran Sewa Kantor',
@@ -96,6 +103,7 @@ class JurnalUmumSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-04',
                 'transaction_proof' => 'TRX004',
                 'description' => 'Pembayaran Sewa Kantor',
@@ -108,6 +116,7 @@ class JurnalUmumSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-05',
                 'transaction_proof' => 'TRX005',
                 'description' => 'Pembayaran Hutang',
@@ -120,6 +129,7 @@ class JurnalUmumSeeder extends Seeder
             ],
             [
                 'company_id' => 1,
+                'company_period_id' => 1,
                 'date' => '2025-02-05',
                 'transaction_proof' => 'TRX005',
                 'description' => 'Pembayaran Hutang',

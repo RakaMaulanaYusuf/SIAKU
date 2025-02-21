@@ -7,36 +7,29 @@ use Illuminate\Support\Facades\DB;
 
 class CompaniesSeeder extends Seeder
 {
-    public function run()
-    {
-        DB::table('companies')->insert([
-            [
-                'name' => 'PT MAJU MUNDUR',
-                'type' => 'Perdagangan Umum',
-                'status' => 'Aktif',
-                'period_month' => 'Januari',
-                'period_year' => 2025,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'PT JAYA ABADI',
-                'type' => 'Perdagangan',
-                'status' => 'Aktif',
-                'period_month' => 'Februari',
-                'period_year' => 2024,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'PT MBOH RA URUS',
-                'type' => 'Marketing',
-                'status' => 'Nonaktif',
-                'period_month' => 'Maret',
-                'period_year' => 2023,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
-    }
+   public function run()
+   {
+       DB::table('companies')->insert([
+           [
+               'name' => 'PT MAJU MUNDUR',
+               'type' => 'Perdagangan Umum',
+               'address' => 'Jl. Maju No. 123, Jakarta',
+               'phone' => '021-5551234',
+               'email' => 'majumundur@gmail.com',
+               'status' => 'Aktif',
+               'created_at' => now(),
+               'updated_at' => now(),
+           ],
+           [
+               'name' => 'PT JAYA ABADI',
+               'type' => 'Perdagangan',
+               'address' => 'Jl. Jaya No. 456, Surabaya', 
+               'phone' => '031-5555678',
+               'email' => 'jayaabadi@gmail.com',
+               'status' => 'Nonaktif',
+               'created_at' => now(),
+               'updated_at' => now(),
+           ],
+       ]);
+   }
 }

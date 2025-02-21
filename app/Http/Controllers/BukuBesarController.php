@@ -10,15 +10,35 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class BukuBesarController extends Controller 
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Silakan pilih perusahaan dan periode terlebih dahulu'
+                ], 400);
+            }
+            return $next($request);
+        })->except(['index']);
+    }
+
     public function index()
     {
+        if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+            return view('bukubesar', ['accounts' => collect(), 'transactions' => collect()]);
+        }
+
         $company_id = auth()->user()->active_company_id;
+        $period_id = auth()->user()->company_period_id;
         
         // Ambil daftar akun yang memiliki transaksi di jurnal umum
-        $accounts = KodeAkun::whereHas('journalEntries', function($query) use ($company_id) {
-                $query->where('company_id', $company_id);
+        $accounts = KodeAkun::whereHas('journalEntries', function($query) use ($company_id, $period_id) {
+                $query->where('company_id', $company_id)
+                      ->where('company_period_id', $period_id);
             })
             ->where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->orderBy('account_id')
             ->select('account_id', 'name')
             ->get()
@@ -41,20 +61,23 @@ class BukuBesarController extends Controller
         ]);
 
         $company_id = auth()->user()->active_company_id;
+        $period_id = auth()->user()->company_period_id;
         $account_id = $validated['account_id'];
         
-        $transactions = $this->getAccountTransactions($company_id, $account_id);
+        $transactions = $this->getAccountTransactions($company_id, $period_id, $account_id);
         
         return response()->json($transactions);
     }
 
-    private function getAccountTransactions($company_id, $account_id)
+    private function getAccountTransactions($company_id, $period_id, $account_id)
     {
         $account = KodeAkun::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->where('account_id', $account_id)
             ->first();
 
         $transactions = JurnalUmum::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->where('account_id', $account_id)
             ->orderBy('date')
             ->orderBy('id')
@@ -83,9 +106,10 @@ class BukuBesarController extends Controller
         });
     }
 
-    public function getAccountBalance($company_id, $account_id) 
+    public function getAccountBalance($company_id, $period_id, $account_id) 
     {
         $account = KodeAkun::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->where('account_id', $account_id)
             ->first();
     
@@ -97,29 +121,23 @@ class BukuBesarController extends Controller
         
         // Inisialisasi saldo awal berdasarkan pos saldo
         if ($pos_saldo === 'DEBIT') {
-            // Untuk akun DEBIT, saldo awal adalah Debit - Credit
             $running_balance = ($account->debit ?? 0) - ($account->credit ?? 0);
         } else {
-            // Untuk akun CREDIT, saldo awal adalah Credit - Debit
             $running_balance = ($account->credit ?? 0) - ($account->debit ?? 0);
         }
     
         // Ambil transaksi sesuai urutan
         $transactions = JurnalUmum::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->where('account_id', $account_id)
             ->orderBy('date')
             ->orderBy('id')
             ->get();
     
-        // Untuk setiap transaksi
         foreach ($transactions as $transaction) {
-            // Jika pos saldo DEBIT
             if ($pos_saldo === 'DEBIT') {
-                // Debit menambah, Credit mengurangi
                 $running_balance = $running_balance + ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
             } else {
-                // Jika pos saldo CREDIT
-                // Credit menambah, Debit mengurangi
                 $running_balance = $running_balance + ($transaction->credit ?? 0) - ($transaction->debit ?? 0);
             }
         }
@@ -131,6 +149,7 @@ class BukuBesarController extends Controller
     {
         try {
             $company_id = auth()->user()->active_company_id;
+            $period_id = auth()->user()->company_period_id;
             $account_id = $request->account_id;
 
             if (!$account_id) {
@@ -138,14 +157,18 @@ class BukuBesarController extends Controller
             }
 
             $account = KodeAkun::where('company_id', $company_id)
+                ->where('company_period_id', $period_id)
                 ->where('account_id', $account_id)
                 ->firstOrFail();
 
-            $transactions = $this->getAccountTransactions($company_id, $account_id);
+            $transactions = $this->getAccountTransactions($company_id, $period_id, $account_id);
 
             $data = [
                 'title' => 'Buku Besar',
                 'companyName' => auth()->user()->active_company->name ?? 'Perusahaan',
+                'periodInfo' => auth()->user()->activePeriod ? 
+                    auth()->user()->activePeriod->period_month . ' ' . auth()->user()->activePeriod->period_year : 
+                    'Semua Periode',
                 'headers' => [
                     'No', 
                     'Tanggal', 

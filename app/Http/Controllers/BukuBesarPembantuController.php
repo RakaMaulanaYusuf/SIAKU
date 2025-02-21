@@ -10,15 +10,35 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class BukuBesarPembantuController extends Controller 
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Silakan pilih perusahaan dan periode terlebih dahulu'
+                ], 400);
+            }
+            return $next($request);
+        })->except(['index']);
+    }
+
     public function index()
     {
+        if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
+            return view('bukubesarpembantu', ['accounts' => collect(), 'transactions' => collect()]);
+        }
+
         $company_id = auth()->user()->active_company_id;
+        $period_id = auth()->user()->company_period_id;
             
         // Ambil daftar kode bantu yang memiliki transaksi di jurnal umum
-        $accounts = KodeBantu::whereHas('journalEntries', function($query) use ($company_id) {
-                $query->where('company_id', $company_id);
+        $accounts = KodeBantu::whereHas('journalEntries', function($query) use ($company_id, $period_id) {
+                $query->where('company_id', $company_id)
+                      ->where('company_period_id', $period_id);
             })
             ->where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->orderBy('helper_id')
             ->select('helper_id', 'name')
             ->get()
@@ -41,29 +61,43 @@ class BukuBesarPembantuController extends Controller
         ]);
 
         $company_id = auth()->user()->active_company_id;
+        $period_id = auth()->user()->company_period_id;
         $helper_id = $validated['helper_id'];
         
-        $transactions = $this->getHelperTransactions($company_id, $helper_id);
+        $transactions = $this->getHelperTransactions($company_id, $period_id, $helper_id);
         
         return response()->json($transactions);
     }
 
-    private function getHelperTransactions($company_id, $helper_id)
+    private function getHelperTransactions($company_id, $period_id, $helper_id)
     {
         $helper = KodeBantu::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->where('helper_id', $helper_id)
             ->first();
 
+        if (!$helper) {
+            return collect();
+        }
+
         $transactions = JurnalUmum::where('company_id', $company_id)
+            ->where('company_period_id', $period_id)
             ->where('helper_id', $helper_id)
             ->orderBy('date')
             ->orderBy('id')
             ->get();
             
-        $running_balance = 0;
+        $running_balance = $helper->balance ?? 0;
 
-        return $transactions->map(function($transaction, $index) use (&$running_balance) {
-            $running_balance += ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+        return $transactions->map(function($transaction, $index) use (&$running_balance, $helper) {
+            // Calculate balance based on helper status
+            if ($helper->status === 'PIUTANG') {
+                // For PIUTANG: debit increases, credit decreases
+                $running_balance += ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+            } else {
+                // For HUTANG: debit decreases, credit increases
+                $running_balance -= ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
+            }
 
             return [
                 'no' => $index + 1,
@@ -81,6 +115,7 @@ class BukuBesarPembantuController extends Controller
     {
         try {
             $company_id = auth()->user()->active_company_id;
+            $period_id = auth()->user()->company_period_id;
             $helper_id = $request->helper_id;
 
             if (!$helper_id) {
@@ -88,14 +123,18 @@ class BukuBesarPembantuController extends Controller
             }
 
             $helper = KodeBantu::where('company_id', $company_id)
+                ->where('company_period_id', $period_id)
                 ->where('helper_id', $helper_id)
                 ->firstOrFail();
 
-            $transactions = $this->getHelperTransactions($company_id, $helper_id);
+            $transactions = $this->getHelperTransactions($company_id, $period_id, $helper_id);
 
             $data = [
                 'title' => 'Buku Besar Pembantu',
                 'companyName' => auth()->user()->active_company->name ?? 'Perusahaan',
+                'periodInfo' => auth()->user()->activePeriod ? 
+                    auth()->user()->activePeriod->period_month . ' ' . auth()->user()->activePeriod->period_year : 
+                    'Semua Periode',
                 'headers' => [
                     'No', 
                     'Tanggal', 
@@ -123,7 +162,9 @@ class BukuBesarPembantuController extends Controller
                 ],
                 'additionalInfo' => [
                     'Kode Bantu' => $helper->helper_id,
-                    'Nama' => $helper->name
+                    'Nama' => $helper->name,
+                    'Status' => $helper->status,
+                    'Saldo Awal' => number_format($helper->balance ?? 0, 2)
                 ]
             ];
 

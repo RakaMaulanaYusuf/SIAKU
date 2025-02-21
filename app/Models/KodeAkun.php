@@ -10,19 +10,19 @@ class KodeAkun extends Model
     
     protected $fillable = [
         'company_id',
-        'account_id',       // Diubah dari 'code' ke 'account_id'
+        'company_period_id',  // Added this field
+        'account_id',
         'name',
-        'helper_table',     // Diubah dari 'table' ke 'helper_table'
+        'helper_table',
         'balance_type',
         'report_type',
         'debit',
         'credit'
     ];
 
-    // Opsional: Menambahkan casting untuk enum
     protected $casts = [
-        'balance_type' => 'string',   // DEBIT atau CREDIT
-        'report_type' => 'string',    // NERACA atau LABARUGI
+        'balance_type' => 'string',
+        'report_type' => 'string',
         'debit' => 'decimal:2',
         'credit' => 'decimal:2'
     ];
@@ -32,7 +32,11 @@ class KodeAkun extends Model
         return $this->belongsTo(Company::class);
     }
 
-    // Tambahkan relationship untuk jurnal umum
+    public function period()
+    {
+        return $this->belongsTo(CompanyPeriod::class, 'company_period_id');
+    }
+
     public function journalEntries()
     {
         return $this->hasMany(JurnalUmum::class, 'account_id', 'account_id');
