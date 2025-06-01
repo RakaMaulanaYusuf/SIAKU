@@ -30,6 +30,7 @@ class User extends Authenticatable
     {
         return $this->role === $roleName;
     }
+    
     public function activeCompany() {
         return $this->belongsTo(Company::class, 'active_company_id');
     }

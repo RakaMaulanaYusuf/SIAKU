@@ -61,7 +61,7 @@ class DashboardController extends Controller
         $totalAset = 850000000;
         $asetPercentage = 3.2;
 
-        return view('dashboard', compact(
+        return view('staff.dashboard', compact(
             'company',
             'currentMonth',
             'totalPendapatanCurrent',

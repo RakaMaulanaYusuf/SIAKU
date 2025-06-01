@@ -26,7 +26,7 @@ class LabaRugiController extends Controller
 
     public function index() {
         if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
-            return view('labarugi', [
+            return view('staff.labarugi', [
                 'pendapatan' => collect(),
                 'hpp' => collect(),
                 'biaya' => collect(),
@@ -42,10 +42,11 @@ class LabaRugiController extends Controller
             ->where('report_type', 'LABARUGI')
             ->get()
             ->map(function($account) {
+                $balance = $this->getBukuBesarBalance($account->account_id);
                 return [
                     'account_id' => $account->account_id, 
                     'name' => $account->name,
-                    'balance' => $this->getBukuBesarBalance($account->account_id)
+                    'balance' => $balance
                 ];
             });
     
@@ -54,12 +55,13 @@ class LabaRugiController extends Controller
             ->with('account')
             ->get()
             ->map(function($item) {
+                $balance = $this->getBukuBesarBalance($item->account_id);
                 return [
                     'id' => $item->id,
                     'account_id' => $item->account_id,
                     'name' => $item->name,
-                    'amount' => $item->amount,
-                    'balance' => $this->getBukuBesarBalance($item->account_id)
+                    'amount' => $balance,
+                    'balance' => $balance
                 ];
             });
     
@@ -68,12 +70,13 @@ class LabaRugiController extends Controller
             ->with('account') 
             ->get()
             ->map(function($item) {
+                $balance = $this->getBukuBesarBalance($item->account_id);
                 return [
                     'id' => $item->id,
                     'account_id' => $item->account_id,
                     'name' => $item->name,
-                    'amount' => $item->amount,
-                    'balance' => $this->getBukuBesarBalance($item->account_id)
+                    'amount' => $balance,
+                    'balance' => $balance
                 ];
             });
     
@@ -82,16 +85,17 @@ class LabaRugiController extends Controller
             ->with('account')
             ->get()
             ->map(function($item) {
+                $balance = $this->getBukuBesarBalance($item->account_id);
                 return [
                     'id' => $item->id,
                     'account_id' => $item->account_id,
                     'name' => $item->name,
-                    'amount' => $item->amount,
-                    'balance' => $this->getBukuBesarBalance($item->account_id)
+                    'amount' => $balance,
+                    'balance' => $balance
                 ];
             });
     
-        return view('labarugi', compact('pendapatan', 'hpp', 'biaya', 'availableAccounts'));
+        return view('staff.labarugi', compact('pendapatan', 'hpp', 'biaya', 'availableAccounts'));
     }
 
     private function getBukuBesarBalance($account_id) {
@@ -102,6 +106,28 @@ class LabaRugiController extends Controller
             $account_id
         );
         return $balance;
+    }
+
+    public function getBalance($accountId)
+    {
+        try {
+            $bukuBesarController = new BukuBesarController();
+            $balance = $bukuBesarController->getAccountBalance(
+                auth()->user()->active_company_id,
+                auth()->user()->company_period_id,
+                $accountId
+            );
+            
+            return response()->json([
+                'success' => true,
+                'balance' => $balance
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     private function getAccountCurrentPosition($account_id)
@@ -123,7 +149,7 @@ class LabaRugiController extends Controller
             ->where('company_period_id', $period_id)
             ->where('account_id', $account_id)
             ->exists()) {
-            return 'biaya';
+            return 'operasional';
         }
         return null;
     }
@@ -170,6 +196,7 @@ class LabaRugiController extends Controller
                 ]
             );
 
+            $balance = $this->getBukuBesarBalance($record->account_id);
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil disimpan',
@@ -177,8 +204,8 @@ class LabaRugiController extends Controller
                     'id' => $record->id,
                     'account_id' => $record->account_id,
                     'name' => $record->name,
-                    'amount' => $record->amount,
-                    'balance' => $this->getBukuBesarBalance($record->account_id)
+                    'amount' => $balance,
+                    'balance' => $balance
                 ]
             ]);
 
@@ -227,6 +254,7 @@ class LabaRugiController extends Controller
             
             $item->update($validated);
 
+            $balance = $this->getBukuBesarBalance($item->account_id);
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil diupdate',
@@ -234,8 +262,8 @@ class LabaRugiController extends Controller
                     'id' => $item->id,
                     'account_id' => $item->account_id,
                     'name' => $item->name,
-                    'amount' => $item->amount,
-                    'balance' => $this->getBukuBesarBalance($item->account_id)
+                    'amount' => $balance,
+                    'balance' => $balance
                 ]
             ]);
 

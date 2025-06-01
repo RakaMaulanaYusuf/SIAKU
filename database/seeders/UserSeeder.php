@@ -10,20 +10,48 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // Hapus admin yang ada jika sudah ada
+        User::where('email', 'admin@gmail.com')->delete();
+        
+        // Admin user
         User::create([
-            'name' => 'Ponidi',
-            'email' => 'ponidi@gmail.com',
+            'name' => 'yusuf',
+            'email' => 'yusuf@gmail.com',
             'password' => Hash::make('password'),
-            'role' => 'staff'
+            'role' => 'admin'
         ]);
 
-        User::create([
-            'name' => 'PT MAJU MUNDUR',
-            'email' => 'majumundur@gmail.com',
-            'password' => Hash::make('password'),
-            'role' => 'viewer',
-            'active_company_id' => 1,
-            'assigned_company_id' => 1
-        ]);
+        // Staff users
+        User::updateOrCreate(
+            ['email' => 'ponidi@gmail.com'],
+            [
+                'name' => 'Ponidi',
+                'password' => Hash::make('password'),
+                'role' => 'staff'
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'raka@gmail.com'],
+            [
+                'name' => 'Raka',
+                'password' => Hash::make('password'),
+                'role' => 'staff'
+            ]
+        );
+
+        // Viewer user (hanya jika ada company)
+        if (\App\Models\Company::count() > 0) {
+            User::updateOrCreate(
+                ['email' => 'majumundur@gmail.com'],
+                [
+                    'name' => 'PT MAJU MUNDUR',
+                    'password' => Hash::make('password'),
+                    'role' => 'viewer',
+                    'assigned_company_id' => 1,
+                    'assigned_company_period_id' => 1
+                ]
+            );
+        }
     }
 }

@@ -3,6 +3,21 @@
 @section('title', 'List Perusahaan')
 
 @section('page')
+<style>
+.swal2-confirm {
+    color: white !important;
+    background-color: #3085d6 !important;
+}
+
+.swal2-cancel {
+    color: white !important;
+    background-color: #d33 !important;
+}
+
+.swal2-styled {
+    color: white !important;
+}
+</style>
 <div class="bg-gray-50 min-h-screen flex flex-col" x-data="{
     openDrawer: false,
     openPeriodModal: false,
@@ -93,13 +108,25 @@
         console.log('Submitting selection:', { company, month, year });
         
         if (!month || !year) {
-            alert('Pilih bulan dan tahun terlebih dahulu');
+            Swal.fire({
+                title: 'Perhatian!',
+                text: 'Pilih bulan dan tahun terlebih dahulu',
+                icon: 'warning',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
             return;
         }
 
         const periodId = this.getPeriodId(company, month, year);
         if (!periodId) {
-            alert('Periode yang dipilih tidak tersedia');
+            Swal.fire({
+                title: 'Error!',
+                text: 'Periode yang dipilih tidak tersedia',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
             return;
         }
 
@@ -121,14 +148,98 @@
         })
         .then(result => {
             if (result.success) {
-                window.location.reload();
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Perusahaan dan periode telah diubah',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.reload();
+                    }
+                });
             } else {
-                alert(result.message);
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.message,
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert(error.message);
+            Swal.fire({
+                title: 'Error!',
+                text: error.message,
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+        });
+    },
+
+    // NEW DELETE FUNCTION
+    deleteCompany(company) {
+        Swal.fire({
+            title: 'Hapus Perusahaan?',
+            text: `Apakah Anda yakin ingin menghapus perusahaan '${company.name}'? Data ini tidak dapat dikembalikan!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('companies') }}/${company.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Gagal menghapus perusahaan');
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    if (result.success) {
+                        // Remove company from local array
+                        this.companies = this.companies.filter(c => c.id !== company.id);
+                        
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Perusahaan berhasil dihapus',
+                            icon: 'success',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: result.message,
+                            icon: 'error',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message,
+                        icon: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            }
         });
     },
     
@@ -158,11 +269,24 @@
                 this.companies.push(result.company);
                 this.openDrawer = false;
                 event.target.reset();
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Perusahaan berhasil ditambahkan',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Gagal menambahkan perusahaan: ' + error.message);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Gagal menambahkan perusahaan: ' + error.message,
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
         });
     },
 
@@ -192,11 +316,24 @@
                 }
                 this.openPeriodModal = false;
                 event.target.reset();
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Periode berhasil ditambahkan',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Gagal menambahkan periode: ' + error.message);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Gagal menambahkan periode: ' + error.message,
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
         });
     }
 }">
@@ -266,9 +403,20 @@
             <!-- Company Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
                 <template x-for="company in filteredCompanies()" :key="company.id">
-                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all"
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all relative"
                          :class="{'ring-2 ring-blue-500': selectedCompanyId === company.id}"
                          @click="selectCompany(company)">
+                        
+                        <!-- DELETE BUTTON - ADDED THIS -->
+                        <button @click.stop="deleteCompany(company)"
+                            class="absolute top-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                            title="Hapus Perusahaan">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+
                         <div class="flex items-center mb-4">
                             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                                 <span class="text-xl font-bold text-blue-600" x-text="company.name.charAt(0)"></span>

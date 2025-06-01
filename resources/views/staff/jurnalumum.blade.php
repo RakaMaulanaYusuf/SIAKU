@@ -3,6 +3,21 @@
 @section('title', 'Jurnal Umum')
 
 @section('page')
+<style>
+.swal2-confirm {
+    color: white !important;
+    background-color: #3085d6 !important;
+}
+
+.swal2-cancel {
+    color: white !important;
+    background-color: #d33 !important;
+}
+
+.swal2-styled {
+    color: white !important;
+}
+</style>
 <div class="bg-gray-50 min-h-screen flex flex-col" x-data="{ 
     searchTerm: '',
     transactions: {{ Js::from($journals) }},
@@ -38,24 +53,58 @@
                     this.transactions.unshift({...result.journal, isEditing: false});
                     this.resetForm();
                 }
-                alert('Data berhasil disimpan');
-                location.reload(); // Reload untuk memperbarui status balance
+                
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Data berhasil disimpan',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        location.reload(); // Reload untuk memperbarui status balance
+                    }
+                });
             } else {
-                alert(result.message || 'Terjadi kesalahan saat menyimpan data');
+                Swal.fire({
+                    title: 'Gagal!',
+                    text: result.message || 'Terjadi kesalahan saat menyimpan data',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyimpan data: ' + error.message);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat menyimpan data: ' + error.message,
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
         }
     },
     
     validateForm(data) {
         if (!data.date || !data.description || !data.account_id) {
-            alert('Tanggal, Keterangan, dan Akun harus diisi');
+            Swal.fire({
+                title: 'Validasi Gagal!',
+                text: 'Tanggal, Keterangan, dan Akun harus diisi',
+                icon: 'warning',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
             return false;
         }
         if (!data.debit && !data.credit) {
-            alert('Nilai Debet atau Kredit harus diisi');
+            Swal.fire({
+                title: 'Validasi Gagal!',
+                text: 'Nilai Debet atau Kredit harus diisi',
+                icon: 'warning',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
             return false;
         }
         return true;
@@ -74,27 +123,54 @@
     },
     
     async deleteTransaction(id) {
-        if (!confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) return;
-        
-        try {
-            const response = await fetch(`/jurnalumum/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: 'Anda ingin menghapus transaksi ini?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/jurnalumum/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.transactions = this.transactions.filter(t => t.id !== id);
+                        
+                        Swal.fire({
+                            title: 'Terhapus!',
+                            text: 'Data berhasil dihapus',
+                            icon: 'success',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload(); // Reload untuk memperbarui status balance
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Terjadi kesalahan saat menghapus data',
+                        icon: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
                 }
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                this.transactions = this.transactions.filter(t => t.id !== id);
-                alert('Data berhasil dihapus');
-                location.reload(); // Reload untuk memperbarui status balance
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat menghapus data');
-        }
+        });
     },
     
     startEdit(transaction) {
@@ -121,13 +197,36 @@
                 transaction.isEditing = false;
                 delete transaction.originalData;
                 Object.assign(transaction, result.journal);
-                location.reload(); // Reload untuk memperbarui status balance
+                
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Data berhasil diperbarui',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        location.reload(); // Reload untuk memperbarui status balance
+                    }
+                });
             } else {
-                alert(result.message || 'Terjadi kesalahan saat menyimpan perubahan');
+                Swal.fire({
+                    title: 'Gagal!',
+                    text: result.message || 'Terjadi kesalahan saat menyimpan perubahan',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyimpan perubahan');
+            Swal.fire({
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat menyimpan perubahan',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
         }
     },
     

@@ -24,7 +24,7 @@ class KodeBantuController extends Controller
     public function index()
     {
         if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
-            return view('kodebantu', ['accounts' => collect()]);
+            return view('staff.kodebantu', ['accounts' => collect()]);
         }
 
         $accounts = KodeBantu::where('company_id', auth()->user()->active_company_id)
@@ -32,7 +32,7 @@ class KodeBantuController extends Controller
             ->orderBy('helper_id')
             ->get();
             
-        return view('kodebantu', compact('accounts'));
+        return view('staff.kodebantu', compact('accounts'));
     }
 
     public function store(Request $request)

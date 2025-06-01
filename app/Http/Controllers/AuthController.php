@@ -9,7 +9,7 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        return view('/login');
+        return view('login');
     }
 
     public function login(Request $request)
@@ -19,18 +19,22 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        if (Auth::attempt(['email' => $credentials['username'], 'password' => $credentials['password']])) {
+        if (Auth::attempt(['email' => $credentials['username'], 'password' => $credentials['password']], true)) {
             $user = Auth::user();
-            $request->session()->regenerate();
             
-            if ($user->role === 'viewer') {
+            $request->session()->regenerate();
+            $request->session()->save();
+            
+            if ($user->role === 'admin') {
+                return redirect('/admin/dashboard'); // Pakai URL langsung, bukan route()
+            } 
+            elseif ($user->role === 'viewer') {
                 $user->update(['active_company_id' => $user->assigned_company_id]);
                 $user->update(['company_period_id' => $user->assigned_company_period_id]);
-                return redirect()->route('vdashboard');
-            } else {
-                return redirect()->route('listP');
+                return redirect('/vdashboard');
+            } elseif ($user->role === 'staff') {
+                return redirect('/listP'); // Pakai URL langsung, bukan route()
             }
-            
         }
 
         return back()->withErrors(['username' => 'Invalid credentials']);

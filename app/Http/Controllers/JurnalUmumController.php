@@ -43,7 +43,7 @@ class JurnalUmumController extends Controller
     public function index()
     {
         if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
-            return view('jurnalumum', [
+            return view('staff.jurnalumum', [
                 'journals' => collect(),
                 'accounts' => collect(),
                 'helpers' => collect(),
@@ -99,7 +99,7 @@ class JurnalUmumController extends Controller
                 ];
             });
             
-        return view('jurnalumum', compact('journals', 'accounts', 'helpers', 'balanceStatus'));
+        return view('staff.jurnalumum', compact('journals', 'accounts', 'helpers', 'balanceStatus'));
     }
 
     public function store(Request $request)

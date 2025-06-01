@@ -14,7 +14,7 @@ class CompanyController extends Controller
     {
         $this->middleware(function ($request, $next) {
             if (auth()->check()) {
-                if (!in_array($request->route()->getName(), ['listP', 'companies.store', 'companies.setActive', 'periods.store'])) {
+                if (!in_array($request->route()->getName(), ['listP', 'companies.store', 'companies.setActive', 'periods.store', 'companies.destroy'])) {
                     if (!auth()->user()->active_company_id) {
                         return redirect()->route('listP')
                             ->with('warning', 'Silakan pilih perusahaan terlebih dahulu');
@@ -34,7 +34,7 @@ class CompanyController extends Controller
         
         $activeCompany = Auth::user()->activeCompany;
         
-        return view('listperusahaan', compact('companies', 'activeCompany'));
+        return view('staff.listperusahaan', compact('companies', 'activeCompany'));
     }
 
     public function store(Request $request)
@@ -145,6 +145,46 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengubah perusahaan dan periode: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // NEW DELETE METHOD
+    public function destroy(Company $company)
+    {
+        DB::beginTransaction();
+        try {
+            // Check if company is currently active for any user
+            $activeUsers = \App\Models\User::where('active_company_id', $company->id)->count();
+            
+            if ($activeUsers > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat menghapus perusahaan yang sedang aktif digunakan'
+                ], 422);
+            }
+
+            // Check if company has related data (optional - you can add more checks here)
+            // For example, check if company has journal entries, accounts, etc.
+            
+            // Delete all periods related to this company
+            CompanyPeriod::where('company_id', $company->id)->delete();
+            
+            // Delete the company
+            $company->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Perusahaan berhasil dihapus'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus perusahaan: ' . $e->getMessage()
             ], 500);
         }
     }

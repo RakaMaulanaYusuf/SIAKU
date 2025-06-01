@@ -1,51 +1,50 @@
 @extends('main')
 
-@section('title', 'Kode Akun')
+@section('title', 'Kode Bantu')
 
 @section('page')
+<style>
+.swal2-confirm {
+    color: white !important;
+    background-color: #3085d6 !important;
+}
+
+.swal2-cancel {
+    color: white !important;
+    background-color: #d33 !important;
+}
+
+.swal2-styled {
+    color: white !important;
+}
+</style>
 <div class="bg-gray-50 min-h-screen flex flex-col" 
     x-data="{ 
     searchTerm: '',
     accounts: {{ Js::from($accounts) }},
     newRow: {
-        account_id: '',
+        helper_id: '',
         name: '',
-        helper_table: '',
-        balance_type: 'DEBIT',
-        report_type: 'NERACA',
-        debit: '',
-        credit: ''
-    },
-    handleBalanceTypeChange(row) {
-        if (row.balance_type === 'DEBIT') {
-            row.credit = '';
-        } else {
-            row.debit = '';
-        }
+        status: 'PIUTANG',
+        balance: ''
     },
     validateForm(row) {
-        if (!row.account_id || !row.name) {
-            alert('Kode dan Nama Akun harus diisi');
+        if (!row.helper_id || !row.name) {
+            Swal.fire({
+                title: 'Perhatian',
+                text: 'Kode dan Nama harus diisi',
+                icon: 'warning',
+                confirmButtonColor: '#3085d6'
+            });
             return false;
         }
-        if (row.balance_type === 'DEBIT' && row.credit) {
-            alert('Kolom kredit harus kosong ketika pos saldo DEBIT');
-            return false;
-        }
-        if (row.balance_type === 'CREDIT' && row.debit) {
-            alert('Kolom debit harus kosong ketika pos saldo CREDIT');
-            return false;
-        }
-        // Set default value 0 if empty
-        if (row.balance_type === 'DEBIT') {
-            row.debit = row.debit || 0;
-        }
-        if (row.balance_type === 'CREDIT') {
-            row.credit = row.credit || 0;
+        // Set default value 0 if balance is empty
+        if (!row.balance) {
+            row.balance = 0;
         }
         return true;
     },
-    async saveData(url = '{{ route('kodeakun.store') }}', method = 'POST', data = null) {
+    async saveData(url = '{{ route('kodebantu.store') }}', method = 'POST', data = null) {
         const rowData = data || this.newRow;
         if (!this.validateForm(rowData)) return;
 
@@ -65,29 +64,52 @@
                 if (method === 'POST') {
                     this.accounts.push({...result.account, isEditing: false});
                     this.newRow = {
-                        account_id: '',
+                        helper_id: '',
                         name: '',
-                        helper_table: '',
-                        balance_type: 'DEBIT',
-                        report_type: 'NERACA',
-                        debit: '',
-                        credit: ''
+                        status: 'PIUTANG',
+                        balance: ''
                     };
                 }
-                alert('Data berhasil disimpan');
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Data berhasil disimpan',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6'
+                });
             } else {
-                alert(result.message || 'Terjadi kesalahan saat menyimpan data');
+                Swal.fire({
+                    title: 'Gagal!',
+                    text: result.message || 'Terjadi kesalahan saat menyimpan data',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6'
+                });
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyimpan data: ' + error.message);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat menyimpan data: ' + error.message,
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
         }
     },
     async deleteAccount(accountId) {
-        if (!confirm('Apakah Anda yakin ingin menghapus akun ini?')) return;
+        const result = await Swal.fire({
+            title: 'Konfirmasi',
+            text: 'Apakah Anda yakin ingin menghapus data ini?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        });
+        
+        if (!result.isConfirmed) return;
         
         try {
-            const response = await fetch(`/kodeakun/${accountId}`, {
+            const response = await fetch(`/kodebantu/${accountId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -98,10 +120,21 @@
             
             if (result.success) {
                 this.accounts = this.accounts.filter(account => account.id !== accountId);
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Data berhasil dihapus',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6'
+                });
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat menghapus data');
+            Swal.fire({
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat menghapus data',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
         }
     },
     startEdit(account) {
@@ -112,7 +145,7 @@
         if (!this.validateForm(account)) return;
 
         try {
-            const response = await fetch(`/kodeakun/${account.id}`, {
+            const response = await fetch(`/kodebantu/${account.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,10 +160,28 @@
                 account.isEditing = false;
                 delete account.originalData;
                 Object.assign(account, result.account);
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Data berhasil diperbarui',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6'
+                });
+            } else {
+                Swal.fire({
+                    title: 'Gagal!',
+                    text: result.message || 'Terjadi kesalahan saat menyimpan perubahan',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6'
+                });
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyimpan perubahan');
+            Swal.fire({
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat menyimpan perubahan',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
         }
     },
     cancelEdit(account) {
@@ -140,23 +191,23 @@
         }
         account.isEditing = false;
     }
-    }">
+}">
     <div class="flex overflow-hidden">
         <x-side-bar-menu></x-side-bar-menu>
         <div id="main-content" class="relative text-black font-poppins w-full h-full overflow-y-auto">
-            {{-- <x-side-bar-menu></x-side-bar-menu> --}}
             <x-nav-bar></x-nav-bar>
+
             <div class="bg-white p-6 mx-6 mt-6 rounded-xl shadow-sm">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h1 class="text-2xl font-bold text-black">Kode Akun</h1>
-                        <p class="text-sm text-gray-600 mt-1">Kelola daftar kode akun perusahaan</p>
+                        <h1 class="text-2xl font-bold text-black">Kode Bantu</h1>
+                        <p class="text-sm text-gray-600 mt-1">Kelola daftar kode bantu perusahaan</p>
                     </div>
                     <div class="flex gap-3">
                         <div class="relative">
                             <input type="text" 
                                 x-model="searchTerm"
-                                placeholder="Cari kode atau nama akun..." 
+                                placeholder="Cari kode atau nama..." 
                                 class="w-64 px-4 py-2 pr-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <div class="absolute right-3 top-2.5 text-gray-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,67 +222,36 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr class="bg-blue-600 text-white text-sm">
-                                <th class="py-3 px-4 text-left border-b border-r w-20">ACCOUNT ID</th>
-                                <th class="py-3 px-4 text-left border-b border-r w-96">NAMA AKUN</th>
-                                <th class="py-3 px-4 text-left border-b border-r w-24">TABEL BANTUAN</th>
-                                <th class="py-3 px-4 text-left border-b border-r w-28">POS SALDO</th>
-                                <th class="py-3 px-4 text-left border-b border-r w-28">POS LAPORAN</th>
-                                <th class="py-3 px-4 text-center border-b" colspan="3">SALDO AWAL</th>
-                            </tr>
-                            <tr class="bg-blue-600 text-white text-sm">
-                                <th class="py-3 px-4 border-r" colspan="5"></th>
-                                <th class="py-3 px-4 text-center border-r w-36">DEBIT</th>
-                                <th class="py-3 px-4 text-center border-r w-36">CREDIT</th>
-                                <th class="py-3 px-4 text-center w-16">AKSI</th>
+                                <th class="py-3 px-4 text-left border-r w-32">KODE BANTU</th>
+                                <th class="py-3 px-4 text-left border-r">NAMA</th>
+                                <th class="py-3 px-4 text-left border-r w-32">STATUS</th>
+                                <th class="py-3 px-4 text-right w-36 border-r">SALDO AWAL</th>
+                                <th class="py-3 px-4 text-center w-24">AKSI</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 text-sm">
                             <!-- New Row Input -->
                             <tr class="hover:bg-gray-50">
                                 <td class="py-2 px-4 border-r">
-                                    <input type="text" x-model="newRow.account_id" 
+                                    <input type="text" x-model="newRow.helper_id" 
                                         class="w-full px-2 py-1.5 border rounded focus:ring-2 focus:ring-blue-500 text-sm"
-                                        placeholder="Kode"
-                                        style="width: 60px;">
+                                        placeholder="Kode">
                                 </td>
                                 <td class="py-2 px-4 border-r">
                                     <input type="text" x-model="newRow.name" 
                                         class="w-full px-2 py-1.5 border rounded focus:ring-2 focus:ring-blue-500 text-sm"
-                                        placeholder="Nama Akun">
+                                        placeholder="Nama">
                                 </td>
                                 <td class="py-2 px-4 border-r">
-                                    <input type="text" x-model="newRow.helper_table" 
-                                        class="w-full px-2 py-1.5 border rounded focus:ring-2 focus:ring-blue-500 text-sm"
-                                        placeholder="Tabel"
-                                        style="width: 60px;">
-                                </td>
-                                <td class="py-2 px-4 border-r">
-                                    <select x-model="newRow.balance_type" 
-                                        @change="handleBalanceTypeChange(newRow)"
+                                    <select x-model="newRow.status" 
                                         class="w-full px-2 py-1.5 border rounded focus:ring-2 focus:ring-blue-500 text-sm">
-                                        <option value="DEBIT">DEBIT</option>
-                                        <option value="CREDIT">CREDIT</option>
+                                        <option value="PIUTANG">PIUTANG</option>
+                                        <option value="HUTANG">HUTANG</option>
                                     </select>
                                 </td>
                                 <td class="py-2 px-4 border-r">
-                                    <select x-model="newRow.report_type" 
-                                        class="w-full px-2 py-1.5 border rounded focus:ring-2 focus:ring-blue-500 text-sm">
-                                        <option value="NERACA">NERACA</option>
-                                        <option value="LABARUGI">LABA RUGI</option>
-                                    </select>
-                                </td>
-                                <td class="py-2 px-4 border-r">
-                                    <input type="number" x-model="newRow.debit" 
-                                        :disabled="newRow.balance_type === 'CREDIT'"
+                                    <input type="number" x-model="newRow.balance" 
                                         class="w-full px-2 py-1.5 border rounded focus:ring-2 focus:ring-blue-500 text-sm text-right"
-                                        :class="{'bg-gray-100': newRow.balance_type === 'CREDIT'}"
-                                        placeholder="0">
-                                </td>
-                                <td class="py-2 px-4 border-r">
-                                    <input type="number" x-model="newRow.credit" 
-                                        :disabled="newRow.balance_type === 'DEBIT'"
-                                        class="w-full px-2 py-1.5 border rounded focus:ring-2 focus:ring-blue-500 text-sm text-right"
-                                        :class="{'bg-gray-100': newRow.balance_type === 'DEBIT'}"
                                         placeholder="0">
                                 </td>
                                 <td class="py-2 px-4 text-center">
@@ -246,18 +266,17 @@
 
                             <!-- Existing Rows -->
                             <template x-for="(account, index) in accounts.filter(a => 
-                                a.account_id.toString().includes(searchTerm.toLowerCase()) ||
+                                a.helper_id.toString().includes(searchTerm.toLowerCase()) ||
                                 a.name.toLowerCase().includes(searchTerm.toLowerCase())
                             )" :key="index">
                                 <tr :class="{'bg-blue-50': account.isEditing}" class="hover:bg-gray-50">
                                     <td class="py-2 px-4 border-r">
                                         <template x-if="!account.isEditing">
-                                            <span x-text="account.account_id"></span>
+                                            <span x-text="account.helper_id"></span>
                                         </template>
                                         <template x-if="account.isEditing">
-                                            <input type="text" x-model="account.account_id" 
-                                                class="w-full px-2 py-1.5 border rounded text-sm"
-                                                style="width: 60px;">
+                                            <input type="text" x-model="account.helper_id" 
+                                                class="w-full px-2 py-1.5 border rounded text-sm">
                                         </template>
                                     </td>
                                     
@@ -273,66 +292,27 @@
                                     
                                     <td class="py-2 px-4 border-r">
                                         <template x-if="!account.isEditing">
-                                            <span x-text="account.helper_table"></span>
+                                            <span x-text="account.status"></span>
                                         </template>
                                         <template x-if="account.isEditing">
-                                            <input type="text" x-model="account.helper_table" 
-                                                class="w-full px-2 py-1.5 border rounded text-sm"
-                                                style="width: 60px;">
-                                        </template>
-                                    </td>
-                                    
-                                    <td class="py-2 px-4 border-r">
-                                        <template x-if="!account.isEditing">
-                                            <span x-text="account.balance_type"></span>
-                                        </template>
-                                        <template x-if="account.isEditing">
-                                            <select x-model="account.balance_type" 
-                                                @change="handleBalanceTypeChange(account)"
+                                            <select x-model="account.status" 
                                                 class="w-full px-2 py-1.5 border rounded text-sm">
-                                                <option value="DEBIT">DEBIT</option>
-                                                <option value="CREDIT">CREDIT</option>
-                                            </select>
-                                        </template>
-                                    </td>
-                                    
-                                    <td class="py-2 px-4 border-r">
-                                        <template x-if="!account.isEditing">
-                                            <span x-text="account.report_type"></span>
-                                        </template>
-                                        <template x-if="account.isEditing">
-                                            <select x-model="account.report_type" 
-                                                class="w-full px-2 py-1.5 border rounded text-sm">
-                                                <option value="NERACA">NERACA</option>
-                                                <option value="LABARUGI">LABA RUGI</option>
+                                                <option value="PIUTANG">PIUTANG</option>
+                                                <option value="HUTANG">HUTANG</option>
                                             </select>
                                         </template>
                                     </td>
                                     
                                     <td class="py-2 px-4 border-r text-right">
                                         <template x-if="!account.isEditing">
-                                            <span x-text="account.debit ? new Intl.NumberFormat('id-ID').format(account.debit) : '-'"></span>
+                                            <span x-text="account.balance ? new Intl.NumberFormat('id-ID').format(account.balance) : '-'"></span>
                                         </template>
                                         <template x-if="account.isEditing">
-                                            <input type="number" x-model="account.debit" 
-                                                :disabled="account.balance_type === 'CREDIT'"
-                                                :class="{'bg-gray-100': account.balance_type === 'CREDIT'}"
+                                            <input type="number" x-model="account.balance" 
                                                 class="w-full px-2 py-1.5 border rounded text-sm text-right">
                                         </template>
                                     </td>
-
-                                    <td class="py-2 px-4 border-r text-right">
-                                        <template x-if="!account.isEditing">
-                                            <span x-text="account.credit ? new Intl.NumberFormat('id-ID').format(account.credit) : '-'"></span>
-                                        </template>
-                                        <template x-if="account.isEditing">
-                                            <input type="number" x-model="account.credit" 
-                                                :disabled="account.balance_type === 'DEBIT'"
-                                                :class="{'bg-gray-100': account.balance_type === 'DEBIT'}"
-                                                class="w-full px-2 py-1.5 border rounded text-sm text-right">
-                                        </template>
-                                    </td>
-                                
+                                    
                                     <td class="py-2 px-4 text-center">
                                         <template x-if="!account.isEditing">
                                             <div class="flex justify-center gap-2">
@@ -370,17 +350,13 @@
                                 </tr>
                             </template>
                         </tbody>
-                        <!-- Footer with Totals -->
                         <tfoot class="bg-gray-50 text-sm">
                             <tr>
-                                <td colspan="5" class="py-2 px-4 text-right font-medium border-r">Total Saldo Awal:</td>
+                                <td colspan="3" class="py-2 px-4 text-right font-medium border-r">Total Saldo Awal:</td>
                                 <td class="py-2 px-4 text-right font-medium border-r" 
-                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(accounts.reduce((sum, account) => sum + (Number(account.debit) || 0), 0))">
+                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(accounts.reduce((sum, account) => sum + (Number(account.balance) || 0), 0))">
                                 </td>
-                                <td class="py-2 px-4 text-right font-medium border-r"
-                                    x-text="'Rp.' + new Intl.NumberFormat('id-ID').format(accounts.reduce((sum, account) => sum + (Number(account.credit) || 0), 0))">
-                                </td>
-                                <td class="py-2 px-4"></td>
+                                <td></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -388,7 +364,7 @@
 
                 <!-- Navigation Buttons -->
                 <div class="flex justify-between mt-6">
-                    <button onclick="window.location.href='{{ route('kodeakun.download-pdf') }}'" 
+                    <button onclick="window.location.href='{{ route('kodebantu.download-pdf') }}'"
                         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>

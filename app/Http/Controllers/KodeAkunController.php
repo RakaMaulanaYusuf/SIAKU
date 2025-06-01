@@ -24,7 +24,7 @@ class KodeAkunController extends Controller
     public function index()
     {
         if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
-            return view('kodeakun', ['accounts' => collect()]);
+            return view('staff.kodeakun', ['accounts' => collect()]);
         }
 
         $accounts = KodeAkun::where('company_id', auth()->user()->active_company_id)
@@ -32,7 +32,7 @@ class KodeAkunController extends Controller
             ->orderBy('account_id')
             ->get();
             
-        return view('kodeakun', compact('accounts'));
+        return view('staff.kodeakun', compact('accounts'));
     }
 
     public function store(Request $request)

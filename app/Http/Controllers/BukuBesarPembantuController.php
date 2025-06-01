@@ -26,7 +26,7 @@ class BukuBesarPembantuController extends Controller
     public function index()
     {
         if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
-            return view('bukubesarpembantu', ['accounts' => collect(), 'transactions' => collect()]);
+            return view('staff.bukubesarpembantu', ['accounts' => collect(), 'transactions' => collect()]);
         }
 
         $company_id = auth()->user()->active_company_id;
@@ -51,7 +51,7 @@ class BukuBesarPembantuController extends Controller
                 
         $transactions = collect();
             
-        return view('bukubesarpembantu', compact('accounts', 'transactions'));
+        return view('staff.bukubesarpembantu', compact('accounts', 'transactions'));
     }
     
     public function getTransactions(Request $request)
