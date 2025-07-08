@@ -67,9 +67,9 @@
 
             <!-- Logo -->
             <div class="flex justify-center items-center py-8">
-                <img src="{{ asset('images/Logo.png') }}" alt="SIAKU" 
+                <img src="{{ asset('images/logosilka2.png') }}" alt="SIAKU" 
                      class="transition-all duration-300"
-                     :class="isOpen ? 'w-24' : 'w-10'">
+                     :class="isOpen ? 'w-28' : 'w-8'">
             </div>
         
             <!-- Menu Items -->

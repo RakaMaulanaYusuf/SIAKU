@@ -8,10 +8,8 @@
         <x-side-bar-menu></x-side-bar-menu>
         
         <div id="main-content" class="relative text-black font-poppins w-full h-full overflow-y-auto">
-            <!-- Current Company Indicator -->
             <x-nav-bar></x-nav-bar>
 
-            <!-- Header Box -->
             <div class="bg-white p-6 mx-6 mt-6 rounded-xl shadow-sm">
                 <div class="flex justify-between items-center">
                     <div>
@@ -20,24 +18,30 @@
                     </div>
                     <div class="flex gap-4">
                         <div class="text-right">
+                            <p class="text-sm text-gray-600">Perusahaan</p>
+                            <p class="font-semibold">{{ $company ? $company->name : 'Pilih Perusahaan' }}</p>
+                        </div>
+                        <div class="text-right">
                             <p class="text-sm text-gray-600">Periode</p>
-                            <p class="font-semibold">{{ $currentMonth->format('F Y') }}</p>
+                            <p class="font-semibold">{{ $currentCompanyPeriod ? $currentCompanyPeriod->getFormattedPeriodAttribute() : 'Pilih Periode' }}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Stats -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
-                <!-- Total Pendapatan -->
                 <div class="bg-white p-6 rounded-xl shadow-sm">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm">Total Pendapatan</p>
                             <h3 class="text-2xl font-bold mt-1">Rp {{ number_format($totalPendapatanCurrent, 0, ',', '.') }}</h3>
-                            <p class="{{ $pendapatanPercentage >= 0 ? 'text-green-500' : 'text-red-500' }} text-sm mt-1">
-                                {{ $pendapatanPercentage >= 0 ? '+' : '' }}{{ number_format($pendapatanPercentage, 1) }}% dari bulan lalu
-                            </p>
+                            @if($totalPendapatanCurrent > 0 || $pendapatanPercentage !== 0) 
+                                <p class="{{ $pendapatanPercentage >= 0 ? 'text-green-500' : 'text-red-500' }} text-sm mt-1">
+                                    {{ $pendapatanPercentage >= 0 ? '+' : '' }}{{ number_format($pendapatanPercentage, 1) }}% dari bulan lalu
+                                </p>
+                            @else
+                                <p class="text-gray-500 text-sm mt-1">Tidak ada data perbandingan</p>
+                            @endif
                         </div>
                         <div class="p-3 bg-green-100 rounded-lg">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,15 +51,18 @@
                     </div>
                 </div>
 
-                <!-- Total Pengeluaran -->
                 <div class="bg-white p-6 rounded-xl shadow-sm">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm">Total Pengeluaran</p>
                             <h3 class="text-2xl font-bold mt-1">Rp {{ number_format($totalPengeluaranCurrent, 0, ',', '.') }}</h3>
-                            <p class="{{ $pengeluaranPercentage >= 0 ? 'text-red-500' : 'text-green-500' }} text-sm mt-1">
-                                {{ $pengeluaranPercentage >= 0 ? '+' : '' }}{{ number_format($pengeluaranPercentage, 1) }}% dari bulan lalu
-                            </p>
+                            @if($totalPengeluaranCurrent > 0 || $pengeluaranPercentage !== 0)
+                                <p class="{{ $pengeluaranPercentage >= 0 ? 'text-red-500' : 'text-green-500' }} text-sm mt-1">
+                                    {{ $pengeluaranPercentage >= 0 ? '+' : '' }}{{ number_format($pengeluaranPercentage, 1) }}% dari bulan lalu
+                                </p>
+                            @else
+                                <p class="text-gray-500 text-sm mt-1">Tidak ada data perbandingan</p>
+                            @endif
                         </div>
                         <div class="p-3 bg-red-100 rounded-lg">
                             <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,15 +72,18 @@
                     </div>
                 </div>
 
-                <!-- Laba Bersih -->
                 <div class="bg-white p-6 rounded-xl shadow-sm">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm">Laba Bersih</p>
                             <h3 class="text-2xl font-bold mt-1">Rp {{ number_format($labaBersihCurrent, 0, ',', '.') }}</h3>
-                            <p class="{{ $labaBersihPercentage >= 0 ? 'text-green-500' : 'text-red-500' }} text-sm mt-1">
-                                {{ $labaBersihPercentage >= 0 ? '+' : '' }}{{ number_format($labaBersihPercentage, 1) }}% dari bulan lalu
-                            </p>
+                            @if($labaBersihCurrent > 0 || $labaBersihPercentage !== 0)
+                                <p class="{{ $labaBersihPercentage >= 0 ? 'text-green-500' : 'text-red-500' }} text-sm mt-1">
+                                    {{ $labaBersihPercentage >= 0 ? '+' : '' }}{{ number_format($labaBersihPercentage, 1) }}% dari bulan lalu
+                                </p>
+                            @else
+                                <p class="text-gray-500 text-sm mt-1">Tidak ada data perbandingan</p>
+                            @endif
                         </div>
                         <div class="p-3 bg-blue-100 rounded-lg">
                             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,13 +93,18 @@
                     </div>
                 </div>
 
-                <!-- Total Aset -->
                 <div class="bg-white p-6 rounded-xl shadow-sm">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm">Total Aset</p>
                             <h3 class="text-2xl font-bold mt-1">Rp {{ number_format($totalAset, 0, ',', '.') }}</h3>
-                            <p class="text-green-500 text-sm mt-1">+{{ number_format($asetPercentage, 1) }}% dari bulan lalu</p>
+                            @if($totalAset > 0 || $asetPercentage !== 0)
+                                <p class="{{ $asetPercentage >= 0 ? 'text-green-500' : 'text-red-500' }} text-sm mt-1">
+                                    {{ $asetPercentage >= 0 ? '+' : '' }}{{ number_format($asetPercentage, 1) }}% dari bulan lalu
+                                </p>
+                            @else
+                                <p class="text-gray-500 text-sm mt-1">Tidak ada data perbandingan</p>
+                            @endif
                         </div>
                         <div class="p-3 bg-purple-100 rounded-lg">
                             <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,58 +114,145 @@
                     </div>
                 </div>
             </div>
-            <!-- Recent Transactions & Charts -->
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-                <!-- Recent Transactions -->
                 <div class="bg-white rounded-xl shadow-sm">
                     <div class="p-6 border-b">
                         <h2 class="text-lg font-semibold">Transaksi Terbaru</h2>
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
+                            @forelse($recentTransactions as $transaction)
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center">
-                                    <div class="p-2 bg-green-100 rounded-lg">
-                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                                    <div class="p-2 {{ $transaction->debit > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }} rounded-lg">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            @if($transaction->debit > 0)
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                                            @else
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                            @endif
                                         </svg>
                                     </div>
                                     <div class="ml-4">
-                                        <p class="font-medium">Pendapatan Jasa</p>
-                                        <p class="text-sm text-gray-500">10 Jan 2025</p>
+                                        <p class="font-medium">{{ $transaction->description }}</p> 
+                                        <p class="text-sm text-gray-500">{{ $transaction->date->format('d M Y') }}</p>
                                     </div>
                                 </div>
-                                <p class="font-semibold text-green-600">+Rp 15.000.000</p>
+                                <p class="font-semibold {{ $transaction->debit > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ $transaction->debit > 0 ? '+' : '-' }}Rp {{ number_format(abs($transaction->debit > 0 ? $transaction->debit : $transaction->credit), 0, ',', '.') }}
+                                </p>
                             </div>
-                            <!-- Add more transactions -->
+                            @empty
+                            <p class="text-gray-500 text-center">Tidak ada transaksi terbaru.</p>
+                            @endforelse
                         </div>
                     </div>
                 </div>
 
-                <!-- Account Summary -->
                 <div class="bg-white rounded-xl shadow-sm">
                     <div class="p-6 border-b">
-                        <h2 class="text-lg font-semibold">Ringkasan Akun</h2>
+                        <h2 class="text-lg font-semibold">Tren Pendapatan & Pengeluaran (6 Bulan)</h2>
+                    </div>
+                    <div class="p-6">
+                        <canvas id="revenueExpensesChart" class="w-full h-64"></canvas>
+                    </div>
+                </div>
+
+                {{-- <div class="bg-white rounded-xl shadow-sm">
+                    <div class="p-6 border-b">
+                        <h2 class="text-lg font-semibold">Ringkasan Saldo Akun Kunci</h2>
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
+                            @forelse($keyAccountBalances as $account)
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Total Piutang</span>
-                                <span class="font-medium">Rp 35.000.000</span>
+                                <span class="text-gray-600">{{ $account['name'] }}</span>
+                                <span class="font-medium {{ $account['is_positive'] ? 'text-green-600' : 'text-red-600' }}">
+                                    Rp {{ number_format($account['balance'], 0, ',', '.') }}
+                                </span>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Total Hutang</span>
-                                <span class="font-medium">Rp 25.000.000</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Kas & Bank</span>
-                                <span class="font-medium">Rp 150.000.000</span>
-                            </div>
+                            @empty
+                            <p class="text-gray-500 text-center">Tidak ada saldo akun kunci yang tersedia.</p>
+                            @endforelse
                         </div>
                     </div>
-                </div>
+                </div> --}}
+
             </div>
         </div>
     </div>
 </div>
+
+{{-- Script for Chart.js --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const monthlySummary = @json($monthlySummary); 
+
+        if (monthlySummary && monthlySummary.length > 0) {
+            const labels = monthlySummary.map(item => item.period_label);
+            const revenueData = monthlySummary.map(item => item.revenue);
+            const expensesData = monthlySummary.map(item => item.expenses);
+
+            const ctx = document.getElementById('revenueExpensesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Pendapatan',
+                            data: revenueData,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1,
+                            fill: false,
+                        },
+                        {
+                            label: 'Pengeluaran',
+                            data: expensesData,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.1,
+                            fill: false,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
 @endsection

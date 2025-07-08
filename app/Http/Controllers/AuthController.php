@@ -28,11 +28,12 @@ class AuthController extends Controller
             if ($user->role === 'admin') {
                 return redirect('/admin/dashboard'); // Pakai URL langsung, bukan route()
             } 
-            elseif ($user->role === 'viewer') {
-                $user->update(['active_company_id' => $user->assigned_company_id]);
-                $user->update(['company_period_id' => $user->assigned_company_period_id]);
-                return redirect('/vdashboard');
-            } elseif ($user->role === 'staff') {
+            // elseif ($user->role === 'viewer') {
+            //     $user->update(['active_company_id' => $user->assigned_company_id]);
+            //     $user->update(['company_period_id' => $user->assigned_company_period_id]);
+            //     return redirect('/vdashboard');
+            // } 
+            else {
                 return redirect('/listP'); // Pakai URL langsung, bukan route()
             }
         }

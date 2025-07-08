@@ -6,9 +6,8 @@ use App\Models\JurnalUmum;
 use App\Models\KodeAkun;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
 
-class BukuBesarController extends Controller 
+class BukuBesarController extends Controller
 {
     public function __construct()
     {
@@ -26,13 +25,15 @@ class BukuBesarController extends Controller
     public function index()
     {
         if (!auth()->user()->active_company_id || !auth()->user()->company_period_id) {
-            return view('staff.bukubesar', ['accounts' => collect(), 'transactions' => collect()]);
+            return view('staff.bukubesar', [
+                'accounts' => collect(),
+                'transactions' => collect()
+            ]);
         }
 
         $company_id = auth()->user()->active_company_id;
         $period_id = auth()->user()->company_period_id;
         
-        // Ambil daftar akun yang memiliki transaksi di jurnal umum
         $accounts = KodeAkun::whereHas('journalEntries', function($query) use ($company_id, $period_id) {
                 $query->where('company_id', $company_id)
                       ->where('company_period_id', $period_id);
@@ -69,12 +70,20 @@ class BukuBesarController extends Controller
         return response()->json($transactions);
     }
 
-    private function getAccountTransactions($company_id, $period_id, $account_id)
+    public function getAccountTransactions($company_id, $period_id, $account_id) 
     {
         $account = KodeAkun::where('company_id', $company_id)
             ->where('company_period_id', $period_id)
             ->where('account_id', $account_id)
             ->first();
+
+        if (!$account) {
+            return collect(); 
+        }
+
+        $running_balance = $account->balance_type === 'DEBIT' ? 
+            ($account->debit ?? 0) : 
+            ($account->credit ?? 0); 
 
         $transactions = JurnalUmum::where('company_id', $company_id)
             ->where('company_period_id', $period_id)
@@ -83,14 +92,10 @@ class BukuBesarController extends Controller
             ->orderBy('id')
             ->get();
             
-        $running_balance = $account->balance_type === 'DEBIT' ? 
-            ($account->debit ?? 0) : 
-            ($account->credit ?? 0);
-
         return $transactions->map(function($transaction, $index) use (&$running_balance, $account) {
             if ($account->balance_type === 'DEBIT') {
                 $running_balance += ($transaction->debit ?? 0) - ($transaction->credit ?? 0);
-            } else {
+            } else { // CREDIT
                 $running_balance += ($transaction->credit ?? 0) - ($transaction->debit ?? 0);
             }
 
@@ -106,7 +111,7 @@ class BukuBesarController extends Controller
         });
     }
 
-    public function getAccountBalance($company_id, $period_id, $account_id) 
+    public function getAccountBalance($company_id, $period_id, $account_id)
     {
         $account = KodeAkun::where('company_id', $company_id)
             ->where('company_period_id', $period_id)
@@ -119,14 +124,12 @@ class BukuBesarController extends Controller
         
         $pos_saldo = $account->balance_type;
         
-        // Inisialisasi saldo awal berdasarkan pos saldo
         if ($pos_saldo === 'DEBIT') {
-            $running_balance = ($account->debit ?? 0) - ($account->credit ?? 0);
+            $running_balance = ($account->debit ?? 0) - ($account->credit ?? 0); 
         } else {
-            $running_balance = ($account->credit ?? 0) - ($account->debit ?? 0);
+            $running_balance = ($account->credit ?? 0) - ($account->debit ?? 0); 
         }
     
-        // Ambil transaksi sesuai urutan
         $transactions = JurnalUmum::where('company_id', $company_id)
             ->where('company_period_id', $period_id)
             ->where('account_id', $account_id)
@@ -143,70 +146,5 @@ class BukuBesarController extends Controller
         }
     
         return $running_balance;
-    }
-    
-    public function downloadPDF(Request $request)
-    {
-        try {
-            $company_id = auth()->user()->active_company_id;
-            $period_id = auth()->user()->company_period_id;
-            $account_id = $request->account_id;
-
-            if (!$account_id) {
-                return redirect()->back()->with('error', 'Pilih akun terlebih dahulu');
-            }
-
-            $account = KodeAkun::where('company_id', $company_id)
-                ->where('company_period_id', $period_id)
-                ->where('account_id', $account_id)
-                ->firstOrFail();
-
-            $transactions = $this->getAccountTransactions($company_id, $period_id, $account_id);
-
-            $data = [
-                'title' => 'Buku Besar',
-                'companyName' => auth()->user()->active_company->name ?? 'Perusahaan',
-                'periodInfo' => auth()->user()->activePeriod ? 
-                    auth()->user()->activePeriod->period_month . ' ' . auth()->user()->activePeriod->period_year : 
-                    'Semua Periode',
-                'headers' => [
-                    'No', 
-                    'Tanggal', 
-                    'Bukti Transaksi', 
-                    'Keterangan', 
-                    'Debet', 
-                    'Kredit',
-                    'Saldo'
-                ],
-                'data' => $transactions->map(function($transaction) {
-                    return [
-                        $transaction['no'],
-                        date('d/m/Y', strtotime($transaction['date'])),
-                        $transaction['bukti'],
-                        $transaction['description'],
-                        $transaction['debit'] ? number_format($transaction['debit'], 2) : '-',
-                        $transaction['credit'] ? number_format($transaction['credit'], 2) : '-',
-                        number_format($transaction['balance'], 2)
-                    ];
-                }),
-                'totals' => [
-                    number_format($transactions->sum('debit'), 2),
-                    number_format($transactions->sum('credit'), 2),
-                    number_format($transactions->last()['balance'] ?? 0, 2)
-                ],
-                'additionalInfo' => [
-                    'Kode Akun' => $account->account_id,
-                    'Nama Akun' => $account->name,
-                    'Pos Saldo' => $account->balance_type
-                ]
-            ];
-
-            $pdf = PDF::loadView('pdf_template', $data);
-
-            return $pdf->download('Buku_Besar_' . $account->account_id . '_' . date('YmdHis') . '.pdf');
-
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengunduh PDF: ' . $e->getMessage());
-        }
     }
 }

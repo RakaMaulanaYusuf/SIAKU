@@ -47,23 +47,23 @@
                         <!-- Company Details -->
                         <div class="space-y-3 mb-4">
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Tipe:</span>
+                                <span class="text-sm text-gray-600">Jasa:</span>
                                 <span class="text-sm font-medium">{{ $company->type ?? 'N/A' }}</span>
                             </div>
-                            <div class="flex justify-between">
+                            {{-- <div class="flex justify-between">
                                 <span class="text-sm text-gray-600">Status:</span>
                                 <span class="px-2 py-1 text-xs rounded-full {{ $company->status_badge }}">
                                     {{ ucfirst($company->status ?? 'active') }}
                                 </span>
-                            </div>
+                            </div> --}}
                             <div class="flex justify-between">
                                 <span class="text-sm text-gray-600">Total Periode:</span>
                                 <span class="text-sm font-medium">{{ $company->periods->count() }}</span>
                             </div>
-                            <div class="flex justify-between">
+                            {{-- <div class="flex justify-between">
                                 <span class="text-sm text-gray-600">Assigned Viewers:</span>
                                 <span class="text-sm font-medium">{{ $company->assignedViewers->count() }}</span>
-                            </div>
+                            </div> --}}
                         </div>
 
                         <!-- Periods List -->
@@ -87,8 +87,8 @@
                         @endif
 
                         <!-- Assigned Viewers -->
-                        @if($company->assignedViewers->count() > 0)
-                        <div class="border-t pt-4 mt-4">
+                        {{-- @if($company->assignedViewers->count() > 0) --}}
+                        {{-- <div class="border-t pt-4 mt-4">
                             <h4 class="text-sm font-medium text-gray-900 mb-2">Viewers yang Di-assign:</h4>
                             <div class="space-y-2">
                                 @foreach($company->assignedViewers as $viewer)
@@ -105,11 +105,11 @@
                                 </div>
                                 @endforeach
                             </div>
-                        </div>
-                        @endif
+                        </div> --}}
+                        {{-- @endif --}}
 
                         <!-- Actions -->
-                        <div class="border-t pt-4 mt-4">
+                        {{-- <div class="border-t pt-4 mt-4">
                             <div class="flex justify-between items-center">
                                 <a href="{{ route('admin.assign-company') }}" 
                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">
@@ -123,7 +123,7 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
                 @empty
@@ -142,7 +142,7 @@
             </div>
 
             <!-- Summary Statistics -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
                 <div class="bg-white p-4 rounded-lg shadow-sm text-center">
                     <div class="text-2xl font-bold text-blue-600">{{ $companies->count() }}</div>
                     <div class="text-sm text-gray-600">Total Perusahaan</div>
@@ -151,10 +151,10 @@
                     <div class="text-2xl font-bold text-green-600">{{ $companies->sum(function($company) { return $company->periods->count(); }) }}</div>
                     <div class="text-sm text-gray-600">Total Periode</div>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm text-center">
+                {{-- <div class="bg-white p-4 rounded-lg shadow-sm text-center">
                     <div class="text-2xl font-bold text-yellow-600">{{ $companies->sum(function($company) { return $company->assignedViewers->count(); }) }}</div>
                     <div class="text-sm text-gray-600">Viewers Assigned</div>
-                </div>
+                </div> --}}
                 <div class="bg-white p-4 rounded-lg shadow-sm text-center">
                     <div class="text-2xl font-bold text-gray-600">{{ $companies->where('created_at', '>=', now()->startOfMonth())->count() }}</div>
                     <div class="text-sm text-gray-600">Baru Bulan Ini</div>

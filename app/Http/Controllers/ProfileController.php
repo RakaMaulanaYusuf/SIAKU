@@ -12,7 +12,7 @@ class ProfileController extends Controller
 {
     public function show()
     {
-        return view('staff.editprofile', [
+        return view('editprofile', [
             'user' => Auth::user()
         ]);
     }

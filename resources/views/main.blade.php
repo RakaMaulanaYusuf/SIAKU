@@ -6,9 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo2.png') }}">
 
-    <title>@yield('title') - SIAKU</title>
+    <title>@yield('title') - SILKA</title>
 
     <!-- CSS and Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

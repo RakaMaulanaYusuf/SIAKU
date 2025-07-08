@@ -23,9 +23,9 @@ class UserSeeder extends Seeder
 
         // Staff users
         User::updateOrCreate(
-            ['email' => 'ponidi@gmail.com'],
+            ['email' => 'rakamaulanayusuf@gmail.com'],
             [
-                'name' => 'Ponidi',
+                'name' => 'Raka Maulana Yusuf',
                 'password' => Hash::make('password'),
                 'role' => 'staff'
             ]
@@ -41,17 +41,17 @@ class UserSeeder extends Seeder
         );
 
         // Viewer user (hanya jika ada company)
-        if (\App\Models\Company::count() > 0) {
-            User::updateOrCreate(
-                ['email' => 'majumundur@gmail.com'],
-                [
-                    'name' => 'PT MAJU MUNDUR',
-                    'password' => Hash::make('password'),
-                    'role' => 'viewer',
-                    'assigned_company_id' => 1,
-                    'assigned_company_period_id' => 1
-                ]
-            );
-        }
+        // if (\App\Models\Company::count() > 0) {
+        //     User::updateOrCreate(
+        //         ['email' => 'majumundur@gmail.com'],
+        //         [
+        //             'name' => 'PT MAJU MUNDUR',
+        //             'password' => Hash::make('password'),
+        //             'role' => 'viewer',
+        //             'assigned_company_id' => 1,
+        //             'assigned_company_period_id' => 1
+        //         ]
+        //     );
+        // }
     }
 }

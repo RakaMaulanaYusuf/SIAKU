@@ -67,9 +67,9 @@
 
             <!-- Logo -->
             <div class="flex justify-center items-center py-8">
-                <img src="{{ asset('images/Logo.png') }}" alt="SIAKU" 
+                <img src="{{ asset('images/logosilka2.png') }}" alt="SIAKU" 
                      class="transition-all duration-300"
-                     :class="isOpen ? 'w-24' : 'w-10'">
+                     :class="isOpen ? 'w-28' : 'w-8'">
             </div>
         
             <!-- Menu Items -->
@@ -78,7 +78,7 @@
                     {name: 'Dashboard Admin', route: '/admin/dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'},
                     {name: 'Kelola Akun', route: '/admin/manage-accounts', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z'},
                     {name: 'Daftar Perusahaan', route: '/admin/companies', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'},
-                    {name: 'Assign Perusahaan', route: '/admin/assign-company', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'}
+                    {{-- {name: 'Assign Perusahaan', route: '/admin/assign-company', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'} --}}
                 ]">
                     <a :href="item.route" 
                        class="flex items-center text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 ease-in-out rounded-xl group relative mb-1"

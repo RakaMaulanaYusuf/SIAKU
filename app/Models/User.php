@@ -12,7 +12,8 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'role',
-        'active_company_id', 'assigned_company_id',
+        'active_company_id', 
+        // 'assigned_company_id',
         'company_period_id', 'assigned_company_period_id'
     ];
 
@@ -35,9 +36,9 @@ class User extends Authenticatable
         return $this->belongsTo(Company::class, 'active_company_id');
     }
 
-    public function assignedCompany() {
-        return $this->belongsTo(Company::class, 'assigned_company_id');
-    }
+    // public function assignedCompany() {
+    //     return $this->belongsTo(Company::class, 'assigned_company_id');
+    // }
 
     public function activePeriod() {
         return $this->belongsTo(CompanyPeriod::class, 'company_period_id');

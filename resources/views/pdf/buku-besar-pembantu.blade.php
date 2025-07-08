@@ -29,55 +29,65 @@
             margin-bottom: 5px;
         }
         
-        .date {
+        .date, .period { /* Tambahkan .period untuk gaya konsisten */
             font-size: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
         
+        /* Account Info for each general ledger */
+        .account-section {
+            margin-bottom: 20px; /* Space between different ledger accounts */
+            page-break-inside: avoid; /* Keep entire section together on one page if possible */
+        }
+
         .account-info {
-            margin-bottom: 15px;
+            margin-top: 15px; /* Add some space above each account's info */
+            margin-bottom: 5px;
         }
         
         .account-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         
         .account-table td {
             border: 1px solid #000;
             padding: 5px;
             font-weight: bold;
+            vertical-align: top;
         }
         
-        .account-name {
+        .account-name-cell { /* Disesuaikan untuk nama */
             width: 50%;
+            padding-left: 10px;
         }
         
-        .account-code {
+        .account-code-cell { /* Disesuaikan untuk kode */
             width: 25%;
             text-align: center;
         }
         
-        .account-type {
+        .account-type-cell { /* Disesuaikan untuk status */
             width: 25%;
             text-align: center;
         }
         
-        table {
+        /* Main Transactions Table */
+        .transactions-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 0; 
         }
         
-        th, td {
+        .transactions-table th, .transactions-table td {
             border: 1px solid #000;
             padding: 3px;
             text-align: left;
             vertical-align: top;
         }
         
-        th {
+        .transactions-table th {
             background-color: #f0f0f0;
             font-weight: bold;
             text-align: center;
@@ -119,94 +129,103 @@
         .col-saldo {
             width: 12%;
         }
-        
-        .empty-row {
-            height: 20px;
-        }
     </style>
 </head>
 <body>
-    {{-- Header --}}
+    {{-- Header Dokumen --}}
     <div class="header">
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
-        <div class="date">{{ strtoupper($date) }}</div>
+        <div class="period">Periode: {{ $periodName }}</div> {{-- Tampilkan Periode --}}
+        <div class="date">Tanggal Cetak: {{ strtoupper($date) }}</div>
     </div>
 
-    {{-- Account Info --}}
-    <div class="account-info">
-        <table class="account-table">
-            <tr>
-                <td class="account-name">NAMA: {{ $kodeBantu->nama_kode_bantu }}</td>
-                <td class="account-code">{{ $kodeBantu->kode_bantu }}</td>
-                <td class="account-type">{{ $kodeBantu->status ?? 'HUTANG' }}</td>
-            </tr>
-        </table>
-    </div>
+    {{-- Loop melalui setiap data pembantu Buku Besar --}}
+    @foreach($bukuBesarPembantuData as $helperData)
+        <div class="account-section">
+            {{-- Informasi Kode Bantu --}}
+            <div class="account-info">
+                <table class="account-table">
+                    <tr>
+                        <td class="account-name-cell">NAMA: {{ $helperData['helper_name'] }}</td>
+                        <td class="account-code-cell">KODE: {{ $helperData['helper_id'] }}</td>
+                        <td class="account-type-cell">STATUS: {{ $helperData['status'] }}</td>
+                    </tr>
+                </table>
+            </div>
 
-    {{-- Transactions Table --}}
-    <table>
-        <thead>
-            <tr>
-                <th class="col-no">NO</th>
-                <th class="col-tanggal">TANGGAL</th>
-                <th class="col-bukti">BUKTI<br>TRANSAKSI</th>
-                <th class="col-keterangan">KETERANGAN</th>
-                <th class="col-debet">DEBET</th>
-                <th class="col-kredit">KREDIT</th>
-                <th class="col-saldo">SALDO</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{-- Saldo Awal --}}
-            <tr>
-                <td class="text-center">-</td>
-                <td class="text-center">-</td>
-                <td class="text-center">-</td>
-                <td>Saldo awal</td>
-                <td class="text-center">-</td>
-                <td class="text-center">-</td>
-                <td class="text-center">-</td>
-            </tr>
+            {{-- Tabel Transaksi untuk Kode Bantu Saat Ini --}}
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th class="col-no">NO</th>
+                        <th class="col-tanggal">TANGGAL</th>
+                        <th class="col-bukti">BUKTI<br>TRANSAKSI</th>
+                        <th class="col-keterangan">KETERANGAN</th>
+                        <th class="col-debet">DEBET</th>
+                        <th class="col-kredit">KREDIT</th>
+                        <th class="col-saldo">SALDO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- Saldo Awal --}}
+                    <tr>
+                        <td class="text-center">-</td>
+                        <td class="text-center">-</td>
+                        <td class="text-center">-</td>
+                        <td>Saldo awal</td>
+                        <td class="text-center">-</td> {{-- Debit awal tidak ditampilkan di sini --}}
+                        <td class="text-center">-</td> {{-- Kredit awal tidak ditampilkan di sini --}}
+                        <td class="text-right">
+                            {{-- Saldo awal dari KodeBantu model --}}
+                            {{ number_format($helperData['initial_balance'] ?? 0, 0, ',', '.') }}
+                        </td>
+                    </tr>
 
-            {{-- Data Transactions --}}
-            @foreach($transactions as $index => $transaction)
-            <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td class="text-center">{{ \Carbon\Carbon::parse($transaction->tanggal)->format('d-m-y') }}</td>
-                <td class="text-center">{{ $transaction->nomor_jurnal }}</td>
-                <td>{{ $transaction->keterangan }}</td>
-                <td class="text-right">
-                    @if($transaction->debit > 0)
-                        {{ number_format($transaction->debit, 0, ',', '.') }}
-                    @else
-                        -
-                    @endif
-                </td>
-                <td class="text-right">
-                    @if($transaction->kredit > 0)
-                        {{ number_format($transaction->kredit, 0, ',', '.') }}
-                    @else
-                        -
-                    @endif
-                </td>
-                <td class="text-right">{{ number_format($transaction->running_balance, 0, ',', '.') }}</td>
-            </tr>
-            @endforeach
+                    {{-- Data Transaksi --}}
+                    @foreach($helperData['transactions'] as $transaction)
+                    <tr>
+                        <td class="text-center">{{ $transaction['no'] }}</td>
+                        <td class="text-center">{{ $transaction['date'] }}</td>
+                        <td class="text-center">{{ $transaction['bukti'] }}</td>
+                        <td>{{ $transaction['description'] }}</td>
+                        <td class="text-right">
+                            @if(isset($transaction['debit']) && $transaction['debit'] > 0)
+                                {{ number_format($transaction['debit'], 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            @if(isset($transaction['credit']) && $transaction['credit'] > 0)
+                                {{ number_format($transaction['credit'], 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td class="text-right">{{ number_format($transaction['balance'], 0, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
 
-            {{-- Empty rows untuk penambahan manual --}}
-            @for($i = 0; $i < 10; $i++)
-            <tr class="empty-row">
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-            @endfor
-        </tbody>
-    </table>
+                    {{-- Menambahkan baris kosong setelah transaksi jika diperlukan --}}
+                    {{-- @php
+                        $rowsCount = 1 + count($helperData['transactions']);
+                        $minRowsForDisplay = 15; // Contoh minimal baris untuk tampilan
+                    @endphp
+                    @for($i = $rowsCount; $i < $minRowsForDisplay; $i++)
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    @endfor --}}
+                </tbody>
+            </table>
+        </div>
+    @endforeach
 </body>
 </html>

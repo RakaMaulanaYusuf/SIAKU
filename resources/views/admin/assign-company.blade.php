@@ -1,4 +1,4 @@
-@extends('main')
+{{-- @extends('main')
 
 @section('title', 'Assign Perusahaan')
 
@@ -301,4 +301,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endsection
+@endsection --}}

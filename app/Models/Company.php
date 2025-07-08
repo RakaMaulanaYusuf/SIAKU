@@ -26,22 +26,22 @@ class Company extends Model
     }
 
     // Relasi untuk viewers yang di-assign ke company ini
-    public function assignedViewers()
-    {
-        return $this->hasMany(User::class, 'assigned_company_id')->where('role', 'viewer');
-    }
+    // public function assignedViewers()
+    // {
+    //     return $this->hasMany(User::class, 'assigned_company_id')->where('role', 'viewer');
+    // }
 
     // Scope untuk mendapatkan companies dengan viewer yang sudah di-assign
-    public function scopeWithAssignedViewers($query)
-    {
-        return $query->with('assignedViewers');
-    }
+    // public function scopeWithAssignedViewers($query)
+    // {
+    //     return $query->with('assignedViewers');
+    // }
 
     // Accessor untuk mendapatkan jumlah viewer yang di-assign
-    public function getAssignedViewersCountAttribute()
-    {
-        return $this->assignedViewers()->count();
-    }
+    // public function getAssignedViewersCountAttribute()
+    // {
+    //     return $this->assignedViewers()->count();
+    // }
 
     // Accessor untuk status yang lebih readable
     public function getStatusBadgeAttribute()

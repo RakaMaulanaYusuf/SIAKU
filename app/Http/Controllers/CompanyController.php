@@ -14,7 +14,7 @@ class CompanyController extends Controller
     {
         $this->middleware(function ($request, $next) {
             if (auth()->check()) {
-                if (!in_array($request->route()->getName(), ['listP', 'companies.store', 'companies.setActive', 'periods.store', 'companies.destroy'])) {
+                if (!in_array($request->route()->getName(), ['listP', 'companies.store', 'companies.setActive', 'periods.store', 'companies.destroy', 'companies.update'])) { // Added 'companies.update'
                     if (!auth()->user()->active_company_id) {
                         return redirect()->route('listP')
                             ->with('warning', 'Silakan pilih perusahaan terlebih dahulu');
@@ -29,11 +29,11 @@ class CompanyController extends Controller
     {
         $companies = Company::with(['periods' => function($query) {
             $query->orderBy('period_year', 'desc')
-                  ->orderBy('period_month', 'desc');
+                    ->orderBy('period_month', 'desc');
         }])->get();
-        
+
         $activeCompany = Auth::user()->activeCompany;
-        
+
         return view('staff.listperusahaan', compact('companies', 'activeCompany'));
     }
 
@@ -57,7 +57,6 @@ class CompanyController extends Controller
                 'address' => $validated['address'],
                 'phone' => $validated['phone'],
                 'email' => $validated['email'],
-                'status' => 'Aktif'
             ]);
 
             $period = CompanyPeriod::create([
@@ -68,7 +67,7 @@ class CompanyController extends Controller
 
             DB::commit();
 
-            $company->load('periods'); 
+            $company->load('periods');
 
             return response()->json([
                 'success' => true,
@@ -131,7 +130,7 @@ class CompanyController extends Controller
             ]);
 
             $user = Auth::user();
-            
+
             $user->update([
                 'active_company_id' => $company->id,
                 'company_period_id' => $validated['period_id']
@@ -149,14 +148,13 @@ class CompanyController extends Controller
         }
     }
 
-    // NEW DELETE METHOD
     public function destroy(Company $company)
     {
         DB::beginTransaction();
         try {
             // Check if company is currently active for any user
             $activeUsers = \App\Models\User::where('active_company_id', $company->id)->count();
-            
+
             if ($activeUsers > 0) {
                 return response()->json([
                     'success' => false,
@@ -164,12 +162,9 @@ class CompanyController extends Controller
                 ], 422);
             }
 
-            // Check if company has related data (optional - you can add more checks here)
-            // For example, check if company has journal entries, accounts, etc.
-            
             // Delete all periods related to this company
             CompanyPeriod::where('company_id', $company->id)->delete();
-            
+
             // Delete the company
             $company->delete();
 
@@ -185,6 +180,39 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus perusahaan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update the specified company in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Company  $company
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(Request $request, Company $company)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'type' => 'required|string|max:255',
+                'address' => 'required|string|max:255',
+                'phone' => 'required|string|max:255',
+                'email' => 'required|string|max:255',
+            ]);
+
+            $company->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Perusahaan berhasil diperbarui',
+                'company' => $company // Return the updated company data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui perusahaan: ' . $e->getMessage()
             ], 500);
         }
     }

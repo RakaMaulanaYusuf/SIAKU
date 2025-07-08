@@ -110,8 +110,8 @@ class NeracaController extends Controller
         return view('staff.neraca', compact('aktivalancar', 'aktivatetap', 'kewajiban', 'ekuitas', 'availableAccounts'));
     }
 
-    private function getBukuBesarBalance($account_id) {
-        $bukuBesarController = new BukuBesarController();
+    public function getBukuBesarBalance($account_id) {
+        $bukuBesarController = new \App\Http\Controllers\BukuBesarController(); // Gunakan fully qualified namespace
         $balance = $bukuBesarController->getAccountBalance(
             auth()->user()->active_company_id,
             auth()->user()->company_period_id,
@@ -324,42 +324,6 @@ class NeracaController extends Controller
                     'success' => false,
                     'message' => 'Error: ' . $e->getMessage()
                 ], 500);
-            }
-        }
-    
-        public function generatePDF()
-        {
-            try {
-                $company_id = auth()->user()->active_company_id;
-                $period_id = auth()->user()->company_period_id;
-                
-                $data = $this->getAllData($company_id, $period_id);
-                
-                // Calculate totals
-                $totalAktivaLancar = $data['aktivalancar']->sum('balance');
-                $totalAktivaTetap = $data['aktivatetap']->sum('balance');
-                $totalKewajiban = $data['kewajiban']->sum('balance');
-                $totalEkuitas = $data['ekuitas']->sum('balance');
-    
-                $data['totals'] = [
-                    'aktiva_lancar' => $totalAktivaLancar,
-                    'aktiva_tetap' => $totalAktivaTetap,
-                    'total_aktiva' => $totalAktivaLancar + $totalAktivaTetap,
-                    'kewajiban' => $totalKewajiban,
-                    'ekuitas' => $totalEkuitas,
-                    'total_pasiva' => $totalKewajiban + $totalEkuitas
-                ];
-    
-                $data['company'] = auth()->user()->active_company;
-                $data['period'] = auth()->user()->activePeriod;
-                $data['tanggal'] = now()->translatedFormat('d F Y');
-    
-                $pdf = PDF::loadView('pdf.neraca', $data);
-                
-                return $pdf->download('laporan-neraca-' . now()->format('Y-m-d') . '.pdf');
-    
-            } catch (\Exception $e) {
-                return back()->with('error', 'Terjadi kesalahan saat generate PDF: ' . $e->getMessage());
             }
         }
     

@@ -119,8 +119,7 @@
                 
                 <!-- Print Button -->
                 <div class="flex justify-between mt-6">
-                    <button 
-                        @click="window.location.href = `/bukubesarpembantu/pdf?helper_id=${selectedAccount}`"
+                    <button @click="if(selectedAccount) { window.location.href = `{{ route('pdf.buku-besar-pembantu') }}?helper_id=${selectedAccount}`; }"
                         :disabled="!selectedAccount"
                         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

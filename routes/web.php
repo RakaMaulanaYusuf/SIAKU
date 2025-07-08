@@ -19,7 +19,7 @@ use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return view('login');
-})->name('welcome');
+})->name('login');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -37,17 +37,24 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['auth', LoginMiddleware::class . ':admin'])->group(function () {
         // Admin Dashboard
         Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+        // Manajemen Akun
         Route::get('/admin/manage-accounts', [AdminController::class, 'manageAccounts'])->name('admin.manage-accounts');
-        Route::post('/admin/users', [AdminController::class, 'createUser'])->name('admin.users.create');
-        Route::put('/admin/users/{user}', [AdminController::class, 'updateUser'])->name('admin.users.update');
+        Route::post('/admin/users', [AdminController::class, 'createUser'])->name('admin.users.create'); // Untuk membuat user baru
+        Route::put('/admin/users/{user}', [AdminController::class, 'updateUser'])->name('admin.users.update'); // Untuk update nama & email
         Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
         Route::put('/admin/users/{user}/reset-password', [AdminController::class, 'resetPassword'])->name('admin.users.reset-password');
+
+        // Rute BARU untuk memperbarui role user
+        Route::put('/admin/users/{user}/update-role', [AdminController::class, 'updateRoleUser'])->name('admin.users.update-role');
+
+        // Mengaktifkan kembali rute unassign
         Route::put('/admin/users/{user}/unassign', [AdminController::class, 'unassignCompany'])->name('admin.users.unassign');
-        
+
         // Company Management
         Route::get('/admin/companies', [AdminController::class, 'listCompanies'])->name('admin.companies');
-        
-        // Company Assignment
+
+        // Company Assignment (Mengaktifkan kembali)
         Route::get('/admin/assign-company', [AdminController::class, 'assignCompany'])->name('admin.assign-company');
         Route::post('/admin/assign-company', [AdminController::class, 'storeAssignment'])->name('admin.assign-company.store');
         Route::get('/admin/companies/{company}/periods', [AdminController::class, 'getCompanyPeriods'])->name('admin.company-periods');
@@ -59,6 +66,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
         Route::post('/companies/{company}/set-active', [CompanyController::class, 'setActive'])->name('companies.setActive');
         Route::delete('/companies/{company}', [CompanyController::class, 'destroy'])->name('companies.destroy');
+        Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update'); // New route for update
         Route::post('/periods', [CompanyController::class, 'storePeriod'])->name('periods.store');
 
         Route::middleware(CheckActiveCompany::class)->group(function () {
@@ -113,51 +121,51 @@ Route::middleware('auth')->group(function () {
             Route::get('/jurnal-umum', [App\Http\Controllers\PdfController::class, 'downloadJurnalUmumPDF'])->name('pdf.jurnal-umum');
             Route::get('/buku-besar', [App\Http\Controllers\PdfController::class, 'downloadBukuBesarPDF'])->name('pdf.buku-besar');
             Route::get('/buku-besar-pembantu', [App\Http\Controllers\PdfController::class, 'downloadBukuBesarPembantuPDF'])->name('pdf.buku-besar-pembantu');
-            Route::get('/laba-rugi', [App\Http\Controllers\PdfController::class, 'downloadLabaRugiPDF'])->name('pdf.laba-rugi');
-            Route::get('/neraca', [App\Http\Controllers\PdfController::class, 'downloadNeracaPDF'])->name('pdf.neraca');
+            Route::get('/laporan-laba-rugi', [App\Http\Controllers\PdfController::class, 'downloadLabaRugiPDF'])->name('pdf.laba-rugi');
+            Route::get('/laporan-neraca', [App\Http\Controllers\PdfController::class, 'downloadNeracaPDF'])->name('pdf.neraca');
         });
     });
 
     // Routes for viewer
-    Route::middleware(['auth', LoginMiddleware::class . ':viewer'])->group(function () {
-        Route::middleware(CheckActiveCompany::class)->group(function () {
-            Route::get('/listPeriods', [ViewerController::class, 'listPeriods'])->name('listPeriods');
-            Route::post('/periods/set', [ViewerController::class, 'setPeriod'])->name('setPeriod');
+    // Route::middleware(['auth', LoginMiddleware::class . ':viewer'])->group(function () {
+    //     Route::middleware(CheckActiveCompany::class)->group(function () {
+    //         Route::get('/listPeriods', [ViewerController::class, 'listPeriods'])->name('listPeriods');
+    //         Route::post('/periods/set', [ViewerController::class, 'setPeriod'])->name('setPeriod');
 
-            Route::get('/vdashboard', [ViewerController::class, 'dashboard'])->name('vdashboard');
+    //         Route::get('/vdashboard', [ViewerController::class, 'dashboard'])->name('vdashboard');
 
-            Route::get('/vkodeakun', [ViewerController::class, 'kodeakun'])->name('vkodeakun');
-            Route::get('/vkodeakun/download-pdf', [ViewerController::class, 'downloadPDF'])->name('vkodeakun.download-pdf');
+    //         Route::get('/vkodeakun', [ViewerController::class, 'kodeakun'])->name('vkodeakun');
+    //         Route::get('/vkodeakun/download-pdf', [ViewerController::class, 'downloadPDF'])->name('vkodeakun.download-pdf');
 
-            Route::get('/vkodebantu', [ViewerController::class, 'kodebantu'])->name('vkodebantu');
-            Route::get('/vkodebantu/download-pdf', [ViewerController::class, 'downloadPDF'])->name('vkodebantu.download-pdf');
+    //         Route::get('/vkodebantu', [ViewerController::class, 'kodebantu'])->name('vkodebantu');
+    //         Route::get('/vkodebantu/download-pdf', [ViewerController::class, 'downloadPDF'])->name('vkodebantu.download-pdf');
 
-            Route::get('/vjurnalumum', [ViewerController::class, 'jurnalumum'])->name('vjurnalumum');
-            Route::get('/vjurnalumum/download-pdf', [ViewerController::class, 'downloadPDF'])->name('vjurnalumum.download-pdf');
+    //         Route::get('/vjurnalumum', [ViewerController::class, 'jurnalumum'])->name('vjurnalumum');
+    //         Route::get('/vjurnalumum/download-pdf', [ViewerController::class, 'downloadPDF'])->name('vjurnalumum.download-pdf');
 
-            Route::get('/vbukubesar', [ViewerController::class, 'bukubesar'])->name('vbukubesar');
-            Route::get('/vbukubesar/transactions', [ViewerController::class, 'getTransactions'])->name('vbukubesar.transactions');
-            Route::get('/vbukubesar/pdf', [ViewerController::class, 'downloadPDF'])->name('vbukubesar.pdf');
+    //         Route::get('/vbukubesar', [ViewerController::class, 'bukubesar'])->name('vbukubesar');
+    //         Route::get('/vbukubesar/transactions', [ViewerController::class, 'getTransactions'])->name('vbukubesar.transactions');
+    //         Route::get('/vbukubesar/pdf', [ViewerController::class, 'downloadPDF'])->name('vbukubesar.pdf');
 
-            Route::get('/vbukubesarpembantu', [ViewerController::class, 'bukubesarpembantu'])->name('vbukubesarpembantu');
-            Route::get('/vbukubesarpembantu/transactions', [ViewerController::class, 'getTransactionsHelper']);
-            Route::get('/vbukubesarpembantu/pdf', [ViewerController::class, 'downloadPDFHelper']);
+    //         Route::get('/vbukubesarpembantu', [ViewerController::class, 'bukubesarpembantu'])->name('vbukubesarpembantu');
+    //         Route::get('/vbukubesarpembantu/transactions', [ViewerController::class, 'getTransactionsHelper']);
+    //         Route::get('/vbukubesarpembantu/pdf', [ViewerController::class, 'downloadPDFHelper']);
             
-            Route::get('/vlabarugi', [ViewerController::class, 'labarugi'])->name('vlabarugi');
-            Route::get('/vlabarugi/pdf', [ViewerController::class, 'generatePDF']);
+    //         Route::get('/vlabarugi', [ViewerController::class, 'labarugi'])->name('vlabarugi');
+    //         Route::get('/vlabarugi/pdf', [ViewerController::class, 'generatePDF']);
 
-            Route::get('/vneraca', [ViewerController::class, 'neraca'])->name('vneraca');
-            Route::get('/vneraca/pdf', [ViewerController::class, 'generatePDF']);
+    //         Route::get('/vneraca', [ViewerController::class, 'neraca'])->name('vneraca');
+    //         Route::get('/vneraca/pdf', [ViewerController::class, 'generatePDF']);
 
-            Route::prefix('pdf')->name('vpdf.')->group(function () {
-                Route::get('/kode-akun', [ViewerController::class, 'downloadKodeAkunPDF'])->name('kode-akun');
-                Route::get('/kode-bantu', [ViewerController::class, 'downloadKodeBantuPDF'])->name('kode-bantu');
-                Route::get('/jurnal-umum', [ViewerController::class, 'downloadJurnalUmumPDF'])->name('jurnal-umum');
-                Route::get('/buku-besar', [ViewerController::class, 'downloadBukuBesarPDF'])->name('buku-besar');
-                Route::get('/buku-besar-pembantu', [ViewerController::class, 'downloadBukuBesarPembantuPDF'])->name('buku-besar-pembantu');
-                Route::get('/laba-rugi', [ViewerController::class, 'downloadLabaRugiPDF'])->name('laba-rugi');
-                Route::get('/neraca', [ViewerController::class, 'downloadNeracaPDF'])->name('neraca');
-            });
-        });
-    });
+    //         Route::prefix('pdf')->name('vpdf.')->group(function () {
+    //             Route::get('/kode-akun', [ViewerController::class, 'downloadKodeAkunPDF'])->name('kode-akun');
+    //             Route::get('/kode-bantu', [ViewerController::class, 'downloadKodeBantuPDF'])->name('kode-bantu');
+    //             Route::get('/jurnal-umum', [ViewerController::class, 'downloadJurnalUmumPDF'])->name('jurnal-umum');
+    //             Route::get('/buku-besar', [ViewerController::class, 'downloadBukuBesarPDF'])->name('buku-besar');
+    //             Route::get('/buku-besar-pembantu', [ViewerController::class, 'downloadBukuBesarPembantuPDF'])->name('buku-besar-pembantu');
+    //             Route::get('/laba-rugi', [ViewerController::class, 'downloadLabaRugiPDF'])->name('laba-rugi');
+    //             Route::get('/neraca', [ViewerController::class, 'downloadNeracaPDF'])->name('neraca');
+    //         });
+    //     });
+    // });
 });

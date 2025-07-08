@@ -451,9 +451,7 @@
 
             <!-- Main Content Grid -->
             <div class="grid grid-cols-2 gap-6">
-                <!-- Kolom Kiri (Aktiva) -->
                 <div>
-                    <!-- Aktiva Lancar -->
                     <div class="mb-6">
                         <h2 class="text-lg font-semibold mb-4">Aktiva Lancar</h2>
                         <div class="border border-gray-200 rounded-lg overflow-hidden">
@@ -800,11 +798,11 @@
 
             <!-- Print Button -->
             <div class="flex justify-end mt-6">
-                <button @click="window.location.href = '/neraca/pdf'"
+                <button onclick="window.location.href = '{{ route('pdf.neraca') }}'"
                         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                     </svg>
                     <span>Print PDF</span>
                 </button>

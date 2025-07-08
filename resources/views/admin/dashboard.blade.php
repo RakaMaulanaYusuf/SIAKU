@@ -25,7 +25,7 @@
             </div>
 
             <!-- Quick Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
                 <!-- Total Users -->
                 <div class="bg-white p-6 rounded-xl shadow-sm">
                     <div class="flex items-center justify-between">
@@ -59,7 +59,7 @@
                 </div>
 
                 <!-- Total Viewers -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
+                {{-- <div class="bg-white p-6 rounded-xl shadow-sm">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm">Akun Viewer</p>
@@ -75,7 +75,7 @@
                             </svg>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Total Companies -->
                 <div class="bg-white p-6 rounded-xl shadow-sm">
@@ -156,7 +156,7 @@
                                 <span class="mt-2 text-sm font-medium text-gray-700 group-hover:text-blue-600">Kelola Akun</span>
                             </a>
 
-                            <a href="{{ route('admin.assign-company') }}" 
+                            {{-- <a href="{{ route('admin.assign-company') }}" 
                                class="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group">
                                 <div class="p-3 bg-green-500 rounded-full group-hover:bg-green-600 transition-colors">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +164,7 @@
                                     </svg>
                                 </div>
                                 <span class="mt-2 text-sm font-medium text-gray-700 group-hover:text-green-600">Assign Perusahaan</span>
-                            </a>
+                            </a> --}}
 
                             <a href="{{ route('admin.companies') }}" 
                                class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group">
@@ -176,14 +176,14 @@
                                 <span class="mt-2 text-sm font-medium text-gray-700 group-hover:text-purple-600">Lihat Perusahaan</span>
                             </a>
 
-                            <div class="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
+                            {{-- <div class="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
                                 <div class="p-3 bg-gray-400 rounded-full">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
                                 </div>
                                 <span class="mt-2 text-sm font-medium text-gray-500">Lainnya</span>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>

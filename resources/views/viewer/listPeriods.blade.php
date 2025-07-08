@@ -15,7 +15,7 @@
             (!this.searchMonth || p.period_month.toLowerCase().includes(this.searchMonth.toLowerCase()))
         );
     }
-}">
+}">   
     <div class="flex overflow-hidden">
         <x-side-bar-viewer></x-side-bar-viewer>
         

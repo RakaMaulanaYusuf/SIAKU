@@ -97,14 +97,14 @@
     <div class="header">
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
-        <div class="date">{{ strtoupper($date) }}</div>
+        <div class="date">Per {{ strtoupper($date) }}</div>
     </div>
 
     {{-- Table --}}
     <table>
         <thead>
             <tr>
-                <th class="col-code">KOD<br>AKUN</th>
+                <th class="col-code">KODE<br>AKUN</th>
                 <th class="col-name">NAMA AKUN</th>
                 <th class="col-report">POS<br>LAPORAN</th>
                 <th colspan="2" class="text-center">SALDO AWAL</th>

@@ -29,17 +29,21 @@
             margin-bottom: 5px;
         }
         
-        .date {
+        .period-date { /* Kombinasi periode dan tanggal cetak */
             font-size: 12px;
             margin-bottom: 15px;
         }
         
         .balance-sheet {
-            display: table;
+            display: table; /* Menggunakan table-layout untuk 2 kolom */
             width: 100%;
         }
         
-        .left-side, .right-side {
+        .balance-sheet-row {
+            display: table-row;
+        }
+
+        .assets-side, .liabilities-side {
             display: table-cell;
             width: 50%;
             vertical-align: top;
@@ -70,11 +74,13 @@
             justify-content: space-between;
             margin-bottom: 3px;
             padding: 2px 0;
+            border-bottom: 1px dotted #ccc; /* Garis putus-putus */
         }
         
         .account-name {
             flex: 1;
             padding-left: 15px;
+            text-align: left;
         }
         
         .account-amount {
@@ -87,6 +93,17 @@
             font-weight: bold;
             margin: 8px 0;
             padding: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .subtotal .label {
+            flex: 1;
+            padding-left: 15px;
+            text-align: left;
+        }
+        .subtotal .amount {
+            width: 100px;
+            text-align: right;
         }
         
         .total {
@@ -96,52 +113,64 @@
             font-size: 12px;
             margin: 15px 0;
             padding: 8px 0;
+            display: flex;
+            justify-content: space-between;
         }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .total .label {
+            flex: 1;
+            padding-left: 15px;
+            text-align: left;
         }
-        
-        .line-item {
-            border-bottom: 1px dotted #ccc;
-            padding: 2px 0;
-        }
-        
-        .text-right {
+        .total .amount {
+            width: 100px;
             text-align: right;
         }
         
-        .text-left {
+        .final-total {
+            border-top: 3px double #000; /* Garis ganda untuk total akhir */
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 20px;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .final-total .label {
+            flex: 1;
+            padding-left: 15px;
             text-align: left;
         }
-        
-        .text-center {
-            text-align: center;
+        .final-total .amount {
+            width: 100px;
+            text-align: right;
         }
-        
-        .bold {
+
+        .laba-ditahan {
+            margin: 15px 0;
             font-weight: bold;
-        }
-        
-        .double-underline {
-            border-bottom: 3px double #000;
-        }
-        
-        .balance-container {
+            padding-left: 15px;
+            text-align: left;
             display: flex;
-            width: 100%;
+            justify-content: space-between;
+            align-items: baseline;
         }
-        
-        .assets-side {
-            width: 50%;
-            padding-right: 20px;
+        .laba-ditahan .label {
+            flex: 1;
+            padding-left: 15px;
+            text-align: left;
         }
-        
-        .liabilities-side {
-            width: 50%;
-            padding-left: 20px;
+        .laba-ditahan .amount {
+            width: 100px;
+            text-align: right;
         }
+
+        /* Footer Cetak */
+        .print-footer {
+            margin-top: 50px; 
+            text-align: right; 
+            font-size: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -149,146 +178,111 @@
     <div class="header">
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
-        <div class="date">Per {{ $date }}</div>
+        <div class="period-date">Per {{ $periodName }}</div> {{-- Menggunakan $periodName --}}
     </div>
 
     {{-- Balance Sheet Content --}}
-    <div class="balance-container">
+    <div class="balance-sheet">
         {{-- AKTIVA --}}
         <div class="assets-side">
             <div class="section-title">AKTIVA</div>
             
             {{-- Aktiva Lancar --}}
             <div class="subsection-title">AKTIVA LANCAR:</div>
-            <table>
-                @php
-                    $aktivaLancar = $aktivaAccounts->filter(function($account) {
-                        return strpos(strtolower($account->name), 'kas') !== false || 
-                               strpos(strtolower($account->name), 'bank') !== false ||
-                               strpos(strtolower($account->name), 'piutang') !== false ||
-                               strpos(strtolower($account->name), 'persediaan') !== false ||
-                               strpos(strtolower($account->name), 'perlengkapan') !== false;
-                    });
-                    $totalAktivaLancar = $aktivaLancar->sum('balance');
-                @endphp
-                
-                @foreach($aktivaLancar as $account)
-                @if($account->balance > 0)
-                <tr class="line-item">
-                    <td class="text-left" style="padding-left: 15px;">{{ $account->name }}</td>
-                    <td class="text-right" style="width: 100px;">{{ number_format($account->balance, 0, ',', '.') }}</td>
-                </tr>
+            <div>
+                @foreach($aktivaLancar as $account) {{-- Langsung looping $aktivaLancar --}}
+                @if($account['amount'] > 0) {{-- Akses amount --}}
+                <div class="account-line">
+                    <div class="account-name">{{ $account['name'] }}</div>
+                    <div class="account-amount">{{ number_format($account['amount'], 0, ',', '.') }}</div>
+                </div>
                 @endif
                 @endforeach
-                <tr class="subtotal">
-                    <td class="text-left bold">Total Aktiva Lancar</td>
-                    <td class="text-right bold">{{ number_format($totalAktivaLancar, 0, ',', '.') }}</td>
-                </tr>
-            </table>
+                <div class="subtotal">
+                    <div class="label">Total Aktiva Lancar</div>
+                    <div class="amount">{{ number_format($totalAktivaLancar, 0, ',', '.') }}</div>
+                </div>
+            </div>
             
             {{-- Aktiva Tetap --}}
             <div class="subsection-title">AKTIVA TETAP:</div>
-            <table>
-                @php
-                    $aktivaTetap = $aktivaAccounts->filter(function($account) {
-                        return strpos(strtolower($account->name), 'gedung') !== false || 
-                               strpos(strtolower($account->name), 'kendaraan') !== false ||
-                               strpos(strtolower($account->name), 'mesin') !== false ||
-                               strpos(strtolower($account->name), 'peralatan') !== false ||
-                               strpos(strtolower($account->name), 'akumulasi') === false;
-                    });
-                    $totalAktivaTetap = $aktivaTetap->sum('balance');
-                @endphp
-                
-                @foreach($aktivaTetap as $account)
-                @if($account->balance > 0)
-                <tr class="line-item">
-                    <td class="text-left" style="padding-left: 15px;">{{ $account->name }}</td>
-                    <td class="text-right" style="width: 100px;">{{ number_format($account->balance, 0, ',', '.') }}</td>
-                </tr>
+            <div>
+                @foreach($aktivaTetap as $account) {{-- Langsung looping $aktivaTetap --}}
+                @if($account['amount'] > 0) {{-- Akses amount --}}
+                <div class="account-line">
+                    <div class="account-name">{{ $account['name'] }}</div>
+                    <div class="account-amount">{{ number_format($account['amount'], 0, ',', '.') }}</div>
+                </div>
                 @endif
                 @endforeach
-                <tr class="subtotal">
-                    <td class="text-left bold">Total Aktiva Tetap</td>
-                    <td class="text-right bold">{{ number_format($totalAktivaTetap, 0, ',', '.') }}</td>
-                </tr>
-            </table>
+                <div class="subtotal">
+                    <div class="label">Total Aktiva Tetap</div>
+                    <div class="amount">{{ number_format($totalAktivaTetap, 0, ',', '.') }}</div>
+                </div>
+            </div>
             
             {{-- Total Aktiva --}}
-            <table>
-                <tr class="total">
-                    <td class="text-left bold">TOTAL AKTIVA</td>
-                    <td class="text-right bold double-underline" style="width: 100px;">{{ number_format($totalAktiva, 0, ',', '.') }}</td>
-                </tr>
-            </table>
+            <div class="total">
+                <div class="label">TOTAL AKTIVA</div>
+                <div class="amount">{{ number_format($totalAktiva, 0, ',', '.') }}</div>
+            </div>
         </div>
 
-        {{-- PASSIVA --}}
+        {{-- KEWAJIBAN & EKUITAS (PASSIVA) --}}
         <div class="liabilities-side">
-            <div class="section-title">PASSIVA</div>
+            <div class="section-title">KEWAJIBAN & EKUITAS</div>
             
-            {{-- Hutang --}}
-            <div class="subsection-title">HUTANG:</div>
-            <table>
-                @php
-                    $hutang = $passivaAccounts->filter(function($account) {
-                        return strpos(strtolower($account->name), 'hutang') !== false ||
-                               strpos(strtolower($account->name), 'utang') !== false;
-                    });
-                    $totalHutang = $hutang->sum('balance');
-                @endphp
-                
-                @foreach($hutang as $account)
-                @if($account->balance > 0)
-                <tr class="line-item">
-                    <td class="text-left" style="padding-left: 15px;">{{ $account->name }}</td>
-                    <td class="text-right" style="width: 100px;">{{ number_format($account->balance, 0, ',', '.') }}</td>
-                </tr>
+            {{-- Kewajiban --}}
+            <div class="subsection-title">KEWAJIBAN:</div>
+            <div>
+                @foreach($kewajiban as $account) {{-- Langsung looping $kewajiban --}}
+                @if($account['amount'] > 0) {{-- Akses amount --}}
+                <div class="account-line">
+                    <div class="account-name">{{ $account['name'] }}</div>
+                    <div class="account-amount">{{ number_format($account['amount'], 0, ',', '.') }}</div>
+                </div>
                 @endif
                 @endforeach
-                <tr class="subtotal">
-                    <td class="text-left bold">Total Hutang</td>
-                    <td class="text-right bold">{{ number_format($totalHutang, 0, ',', '.') }}</td>
-                </tr>
-            </table>
+                <div class="subtotal">
+                    <div class="label">Total Kewajiban</div>
+                    <div class="amount">{{ number_format($totalKewajiban, 0, ',', '.') }}</div>
+                </div>
+            </div>
             
-            {{-- Modal --}}
-            <div class="subsection-title">MODAL:</div>
-            <table>
-                @php
-                    $modal = $passivaAccounts->filter(function($account) {
-                        return strpos(strtolower($account->name), 'modal') !== false ||
-                               strpos(strtolower($account->name), 'ekuitas') !== false;
-                    });
-                    $totalModal = $modal->sum('balance');
-                @endphp
-                
-                @foreach($modal as $account)
-                @if($account->balance > 0)
-                <tr class="line-item">
-                    <td class="text-left" style="padding-left: 15px;">{{ $account->name }}</td>
-                    <td class="text-right" style="width: 100px;">{{ number_format($account->balance, 0, ',', '.') }}</td>
-                </tr>
+            {{-- Ekuitas --}}
+            <div class="subsection-title">EKUITAS:</div>
+            <div>
+                @foreach($ekuitas as $account) {{-- Langsung looping $ekuitas --}}
+                @if($account['amount'] > 0) {{-- Akses amount --}}
+                <div class="account-line">
+                    <div class="account-name">{{ $account['name'] }}</div>
+                    <div class="account-amount">{{ number_format($account['amount'], 0, ',', '.') }}</div>
+                </div>
                 @endif
                 @endforeach
-                <tr class="subtotal">
-                    <td class="text-left bold">Total Modal</td>
-                    <td class="text-right bold">{{ number_format($totalModal, 0, ',', '.') }}</td>
-                </tr>
-            </table>
+                {{-- Laba Bersih Tahun Berjalan (sebagai bagian dari Ekuitas) --}}
+                @if(isset($labaBersihTahunBerjalan))
+                <div class="account-line laba-ditahan">
+                    <div class="account-name">Laba Bersih Tahun Berjalan</div>
+                    <div class="account-amount">{{ number_format($labaBersihTahunBerjalan, 0, ',', '.') }}</div>
+                </div>
+                @endif
+                <div class="subtotal">
+                    <div class="label">Total Ekuitas</div>
+                    <div class="amount">{{ number_format($totalEkuitas + $labaBersihTahunBerjalan, 0, ',', '.') }}</div> {{-- Tambahkan laba ditahan ke total ekuitas --}}
+                </div>
+            </div>
             
-            {{-- Total Passiva --}}
-            <table>
-                <tr class="total">
-                    <td class="text-left bold">TOTAL PASSIVA</td>
-                    <td class="text-right bold double-underline" style="width: 100px;">{{ number_format($totalPassiva, 0, ',', '.') }}</td>
-                </tr>
-            </table>
+            {{-- Total Kewajiban & Ekuitas --}}
+            <div class="total">
+                <div class="label">TOTAL KEWAJIBAN & EKUITAS</div>
+                <div class="amount">{{ number_format($totalKewajibanDanEkuitas + $labaBersihTahunBerjalan, 0, ',', '.') }}</div> {{-- Tambahkan laba ditahan --}}
+            </div>
         </div>
     </div>
 
     {{-- Footer --}}
-    <div style="margin-top: 50px; text-align: right; font-size: 10px;">
+    <div class="print-footer">
         <p>Dicetak pada: {{ now()->format('d F Y, H:i') }}</p>
     </div>
 </body>

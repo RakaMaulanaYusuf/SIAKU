@@ -16,12 +16,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', ['admin', 'staff', 'viewer'])->default('staff');
+            $table->enum('role', ['admin', 'staff'])->default('staff');
             $table->string('profile_photo')->nullable();
             $table->foreignId('active_company_id')->nullable()->constrained('companies')->onDelete('set null');
-            $table->foreignId('assigned_company_id')->nullable()->constrained('companies')->onDelete('set null');
+            // $table->foreignId('assigned_company_id')->nullable()->constrained('companies')->onDelete('set null');
             $table->foreignId('company_period_id')->nullable()->constrained('company_period')->onDelete('set null');
-            $table->foreignId('assigned_company_period_id')->nullable()->constrained('company_period')->onDelete('set null');
+            // $table->foreignId('assigned_company_period_id')->nullable()->constrained('company_period')->onDelete('set null');
             $table->rememberToken();
             $table->timestamps();
         });

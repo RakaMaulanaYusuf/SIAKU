@@ -67,32 +67,33 @@
             background-color: #f9f9f9;
         }
         
+        /* Menggunakan % untuk lebar kolom agar lebih adaptif */
         .col-tanggal {
-            width: 8%;
+            width: 10%; /* Disesuaikan */
         }
         
         .col-bukti {
-            width: 8%;
+            width: 10%; /* Disesuaikan */
         }
         
         .col-keterangan {
-            width: 30%;
+            width: 35%; /* Disesuaikan, karena 2 kolom nama dihilangkan */
         }
         
         .col-kode-akun {
-            width: 8%;
+            width: 10%; /* Disesuaikan */
         }
         
         .col-kode-bantu {
-            width: 8%;
+            width: 10%; /* Disesuaikan */
         }
         
         .col-debet {
-            width: 12%;
+            width: 12.5%; /* Disesuaikan */
         }
         
         .col-kredit {
-            width: 12%;
+            width: 12.5%; /* Disesuaikan */
         }
     </style>
 </head>
@@ -101,7 +102,10 @@
     <div class="header">
         <div class="company-name">{{ strtoupper($companyName) }}</div>
         <div class="title">{{ $title }}</div>
-        <div class="date">{{ strtoupper($date) }}</div>
+        <div class="date">Per {{ strtoupper($date) }}</div>
+        @if(isset($periodName))
+            <div class="date">Periode: {{ $periodName }}</div>
+        @endif
     </div>
 
     {{-- Table --}}
@@ -119,23 +123,23 @@
         </thead>
         <tbody>
             {{-- Data Jurnal --}}
-            @foreach($jurnals as $jurnal)
+            @foreach($journals as $jurnal)
             <tr>
-                <td class="text-center">{{ \Carbon\Carbon::parse($jurnal->tanggal)->format('d-m-y') }}</td>
-                <td class="text-center">{{ $jurnal->nomor_jurnal }}</td>
-                <td>{{ $jurnal->keterangan }}</td>
-                <td class="text-center">{{ $jurnal->kodeAkun->account_id ?? '-' }}</td>
-                <td class="text-center">{{ $jurnal->kodeBantu->kode_bantu ?? '-' }}</td>
+                <td class="text-center">{{ $jurnal['date'] }}</td>
+                <td class="text-center">{{ $jurnal['transaction_proof'] }}</td>
+                <td>{{ $jurnal['description'] }}</td>
+                <td class="text-center">{{ $jurnal['account_id'] }}</td> {{-- Hanya Kode Akun --}}
+                <td class="text-center">{{ $jurnal['helper_id'] ?? '-' }}</td> {{-- Hanya Kode Bantu --}}
                 <td class="text-right">
-                    @if($jurnal->debit > 0)
-                        {{ number_format($jurnal->debit, 0, ',', '.') }}
+                    @if(isset($jurnal['debit']) && $jurnal['debit'] > 0)
+                        {{ number_format($jurnal['debit'], 0, ',', '.') }}
                     @else
                         -
                     @endif
                 </td>
                 <td class="text-right">
-                    @if($jurnal->kredit > 0)
-                        {{ number_format($jurnal->kredit, 0, ',', '.') }}
+                    @if(isset($jurnal['credit']) && $jurnal['credit'] > 0)
+                        {{ number_format($jurnal['credit'], 0, ',', '.') }}
                     @else
                         -
                     @endif
@@ -145,12 +149,18 @@
 
             {{-- Total Row --}}
             <tr class="total-row">
-                <td colspan="5" class="text-center"><strong>TOTAL</strong></td>
+                <td colspan="5" class="text-center"><strong>TOTAL</strong></td> {{-- colspan disesuaikan: 7 - 2 = 5 --}}
                 <td class="text-right">
                     <strong>{{ number_format($totalDebit, 0, ',', '.') }}</strong>
                 </td>
                 <td class="text-right">
                     <strong>{{ number_format($totalCredit, 0, ',', '.') }}</strong>
+                </td>
+            </tr>
+            {{-- Status Balance --}}
+            <tr>
+                <td colspan="7" class="text-center" style="padding-top: 10px;"> {{-- colspan disesuaikan: 9 - 2 = 7 --}}
+                    Status Balance: {{ $isBalanced ? 'BALANCE' : 'TIDAK BALANCE' }}
                 </td>
             </tr>
         </tbody>

@@ -7,8 +7,8 @@
     <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6">
         <!-- Logo dan Header -->
         <div class="flex flex-col items-center justify-center space-y-2">
-            <img src="{{ asset('images/Logo.png') }}" alt="SIAKU Logo" class="w-40 h-40">
-            <p class="text-black text-lg">Sistem Informasi Akuntansi</p>
+            <img src="{{ asset('images/logoSILKA.png') }}" alt="SIAKU Logo" class="w-64 h-64">
+            <p class="text-black text-lg text-center font-semibold">Sistem Informasi Laporan Keuangan dan Akuntansi</p>
         </div>
 
         @if ($errors->any())

@@ -98,8 +98,8 @@ class LabaRugiController extends Controller
         return view('staff.labarugi', compact('pendapatan', 'hpp', 'biaya', 'availableAccounts'));
     }
 
-    private function getBukuBesarBalance($account_id) {
-        $bukuBesarController = new BukuBesarController();
+    public function getBukuBesarBalance($account_id) {
+        $bukuBesarController = new \App\Http\Controllers\BukuBesarController(); // Gunakan fully qualified namespace
         $balance = $bukuBesarController->getAccountBalance(
             auth()->user()->active_company_id,
             auth()->user()->company_period_id,
@@ -304,39 +304,6 @@ class LabaRugiController extends Controller
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
             ], 500);
-        }
-    }
-
-    public function generatePDF()
-    {
-        try {
-            $company_id = auth()->user()->active_company_id;
-            $period_id = auth()->user()->company_period_id;
-            
-            $data = $this->getAllData($company_id, $period_id);
-            
-            $totalPendapatan = $data['pendapatan']->sum('balance');
-            $totalHPP = $data['hpp']->sum('balance');
-            $totalBiaya = $data['operasional']->sum('balance');
-            $labaBersih = $totalPendapatan - ($totalHPP + $totalBiaya);
-
-            $data['totals'] = [
-                'pendapatan' => $totalPendapatan,
-                'hpp' => $totalHPP,
-                'operasional' => $totalBiaya,
-                'laba_bersih' => $labaBersih
-            ];
-
-            $data['company'] = auth()->user()->active_company;
-            $data['period'] = auth()->user()->activePeriod;
-            $data['tanggal'] = now()->translatedFormat('d F Y');
-
-            $pdf = PDF::loadView('pdf.labarugi', $data);
-            
-            return $pdf->download('laporan-laba-rugi-' . now()->format('Y-m-d') . '.pdf');
-
-        } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan saat generate PDF: ' . $e->getMessage());
         }
     }
 

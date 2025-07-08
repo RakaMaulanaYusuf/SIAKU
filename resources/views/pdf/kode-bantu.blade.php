@@ -117,12 +117,6 @@
                     <td colspan="4" class="text-center bold">TOTAL SALDO AWAL</td>
                     <td class="text-right bold">{{ number_format($totalBalance, 0, ',', '.') }}</td>
                 </tr>
-                
-                {{-- Summary Row --}}
-                <tr class="total-row">
-                    <td colspan="4" class="text-center bold">TOTAL RECORDS</td>
-                    <td class="text-center bold">{{ $totalRecords }} item(s)</td>
-                </tr>
             @else
                 <tr>
                     <td colspan="5" class="text-center">Tidak ada data kode bantu</td>

@@ -42,7 +42,7 @@ class ViewerController extends Controller
             ->orderBy('period_month', 'desc')
             ->get();
             
-        return view('listPeriods', compact('periods', 'company'));
+        return view('viewer.listPeriods', compact('periods', 'company'));
     }
 
     // Method untuk set periode aktif
@@ -67,7 +67,7 @@ class ViewerController extends Controller
                 ->with('warning', 'Pilih periode terlebih dahulu');
         }
 
-        return view('vdashboard');
+        return view('viewer.vdashboard');
     }
 
     public function kodeakun()
@@ -87,7 +87,7 @@ class ViewerController extends Controller
             ->orderBy('account_id')
             ->get();
             
-        return view('vkodeakun', compact('accounts'));
+        return view('viewer.vkodeakun', compact('accounts'));
     }
 
     public function kodebantu()
@@ -107,7 +107,7 @@ class ViewerController extends Controller
             ->orderBy('helper_id')
             ->get();
             
-        return view('vkodebantu', compact('accounts'));
+        return view('viewer.vkodebantu', compact('accounts'));
     }
 
     public function jurnalumum()
@@ -169,7 +169,7 @@ class ViewerController extends Controller
                 ];
             });
             
-        return view('vjurnalumum', compact('journals', 'accounts', 'helpers'));
+        return view('viewer.vjurnalumum', compact('journals', 'accounts', 'helpers'));
     }
 
     public function bukubesar(Request $request)
@@ -206,7 +206,7 @@ class ViewerController extends Controller
                 
             $transactions = collect();
             
-            return view('vbukubesar', compact('accounts', 'transactions'));
+            return view('viewer.vbukubesar', compact('accounts', 'transactions'));
         }
         
         // If account_id is provided, return transactions
@@ -226,7 +226,7 @@ class ViewerController extends Controller
             return $this->downloadPDF($company_id, $period_id, $account_id, 'buku_besar');
         }
 
-        return view('vbukubesar', compact('accounts', 'transactions'));
+        return view('viewer.vbukubesar', compact('accounts', 'transactions'));
     }
 
     public function bukubesarpembantu(Request $request)
@@ -263,7 +263,7 @@ class ViewerController extends Controller
                 
             $transactions = collect();
             
-            return view('vbukubesarpembantu', compact('accounts', 'transactions'));
+            return view('viewer.vbukubesarpembantu', compact('accounts', 'transactions'));
         }
 
         // If helper_id is provided, return transactions
@@ -283,7 +283,7 @@ class ViewerController extends Controller
             return $this->downloadPDF($company_id, $period_id, $helper_id, 'buku_besar_pembantu');
         }
 
-        return view('vbukubesarpembantu', compact('accounts', 'transactions'));
+        return view('viewer.vbukubesarpembantu', compact('accounts', 'transactions'));
     }
 
     /**
@@ -541,7 +541,7 @@ class ViewerController extends Controller
                 ];
             });
     
-        return view('vlabarugi', compact('pendapatan', 'hpp', 'biaya', 'availableAccounts'));
+        return view('viewer.vlabarugi', compact('pendapatan', 'hpp', 'biaya', 'availableAccounts'));
     }
 
     private function getBukuBesarBalance($account_id) 
@@ -644,7 +644,7 @@ class ViewerController extends Controller
                 ];
             });
     
-        return view('vneraca', compact('aktivalancar', 'aktivatetap', 'kewajiban', 'ekuitas', 'availableAccounts'));
+        return view('viewer.vneraca', compact('aktivalancar', 'aktivatetap', 'kewajiban', 'ekuitas', 'availableAccounts'));
     }
     
     /**

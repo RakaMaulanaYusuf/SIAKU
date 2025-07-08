@@ -16,24 +16,28 @@ class AdminController extends Controller
     {
         $totalUsers = User::count();
         $totalStaff = User::where('role', 'staff')->count();
-        $totalViewers = User::where('role', 'viewer')->count();
+        // $totalViewers = User::where('role', 'viewer')->count();
         $totalCompanies = Company::count();
         $recentUsers = User::latest()->take(5)->get();
-        $unassignedViewers = User::where('role', 'viewer')
-            ->whereNull('assigned_company_id')
-            ->count();
+        // $unassignedViewers = User::where('role', 'viewer')
+        //     ->whereNull('assigned_company_id')
+        //     ->count();
 
         return view('admin.dashboard', compact(
-            'totalUsers', 'totalStaff', 'totalViewers', 
-            'totalCompanies', 'recentUsers', 'unassignedViewers'
+            'totalUsers', 'totalStaff', 
+            // 'totalViewers', 
+            'totalCompanies', 'recentUsers', 
+            // 'unassignedViewers'
         ));
     }
 
     // Kelola Akun Staff
     public function manageAccounts()
     {
-        $users = User::whereIn('role', ['staff', 'viewer'])
-            ->with(['assignedCompany', 'assignedPeriod'])
+        $users = User::whereIn('role', ['staff', 'admin'])
+            ->with([
+                                // 'assignedCompany', 
+                                'assignedPeriod'])
             ->latest()
             ->get();
         
@@ -47,7 +51,7 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:staff,viewer'
+            'role' => 'required|in:staff,admin'
         ]);
 
         if ($validator->fails()) {
@@ -83,7 +87,6 @@ class AdminController extends Controller
                 'max:255',
                 Rule::unique('users')->ignore($user->id)
             ],
-            'role' => 'required|in:staff,viewer'
         ]);
 
         if ($validator->fails()) {
@@ -96,6 +99,28 @@ class AdminController extends Controller
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User berhasil diupdate',
+            'user' => $user
+        ]);
+    }
+    public function updateRoleUser(Request $request, User $user)
+    {
+        $validator = Validator::make($request->all(), [
+            'role' => 'required|in:staff,admin'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user->update([
             'role' => $request->role
         ]);
 
@@ -151,65 +176,67 @@ class AdminController extends Controller
     // Daftar Perusahaan
     public function listCompanies()
     {
-        $companies = Company::with(['periods', 'assignedViewers'])->get();
+        $companies = Company::with(['periods', 
+        // 'assignedViewers'
+        ])->get();
         return view('admin.companies', compact('companies'));
     }
 
     // Assign Company to Viewer
-    public function assignCompany()
-    {
-        $viewers = User::where('role', 'viewer')->get();
-        $companies = Company::with('periods')->get();
+    // public function assignCompany()
+    // {
+    //     $viewers = User::where('role', 'viewer')->get();
+    //     $companies = Company::with('periods')->get();
         
-        return view('admin.assign-company', compact('viewers', 'companies'));
-    }
+    //     return view('admin.assign-company', compact('viewers', 'companies'));
+    // }
 
     // Store Company Assignment
-    public function storeAssignment(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'viewer_id' => 'required|exists:users,id',
-            'company_id' => 'required|exists:companies,id',
-            'period_id' => 'required|exists:company_period,id'
-        ]);
+    // public function storeAssignment(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'viewer_id' => 'required|exists:users,id',
+    //         'company_id' => 'required|exists:companies,id',
+    //         'period_id' => 'required|exists:company_period,id'
+    //     ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
 
-        $viewer = User::findOrFail($request->viewer_id);
+    //     $viewer = User::findOrFail($request->viewer_id);
         
-        if ($viewer->role !== 'viewer') {
-            return response()->json([
-                'success' => false,
-                'message' => 'User harus memiliki role viewer'
-            ], 422);
-        }
+    //     if ($viewer->role !== 'viewer') {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'User harus memiliki role viewer'
+    //         ], 422);
+    //     }
 
-        $period = CompanyPeriod::where('id', $request->period_id)
-            ->where('company_id', $request->company_id)
-            ->first();
+    //     $period = CompanyPeriod::where('id', $request->period_id)
+    //         ->where('company_id', $request->company_id)
+    //         ->first();
 
-        if (!$period) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Periode tidak valid untuk perusahaan yang dipilih'
-            ], 422);
-        }
+    //     if (!$period) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Periode tidak valid untuk perusahaan yang dipilih'
+    //         ], 422);
+    //     }
 
-        $viewer->update([
-            'assigned_company_id' => $request->company_id,
-            'assigned_company_period_id' => $request->period_id
-        ]);
+    //     $viewer->update([
+    //         'assigned_company_id' => $request->company_id,
+    //         'assigned_company_period_id' => $request->period_id
+    //     ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Perusahaan berhasil diassign ke viewer'
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Perusahaan berhasil diassign ke viewer'
+    //     ]);
+    // }
 
     // Get Company Periods (AJAX)
     public function getCompanyPeriods($companyId)
@@ -231,25 +258,25 @@ class AdminController extends Controller
     }
 
     // Unassign Company from Viewer
-    public function unassignCompany(User $user)
-    {
-        if ($user->role !== 'viewer') {
-            return response()->json([
-                'success' => false,
-                'message' => 'User bukan viewer'
-            ], 422);
-        }
+    // public function unassignCompany(User $user)
+    // {
+    //     if ($user->role !== 'viewer') {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'User bukan viewer'
+    //         ], 422);
+    //     }
 
-        $user->update([
-            'assigned_company_id' => null,
-            'assigned_company_period_id' => null,
-            'active_company_id' => null,
-            'company_period_id' => null
-        ]);
+    //     $user->update([
+    //         'assigned_company_id' => null,
+    //         'assigned_company_period_id' => null,
+    //         'active_company_id' => null,
+    //         'company_period_id' => null
+    //     ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Assignment perusahaan berhasil dihapus'
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Assignment perusahaan berhasil dihapus'
+    //     ]);
+    // }
 }
